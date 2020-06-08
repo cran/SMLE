@@ -7,7 +7,7 @@
 \method{print}{smle}(x, ...)
 }
 \arguments{
-\item{x}{Fitted \code{"smle"} object.}
+\item{x}{Fitted '\code{smle}' object.}
 
 \item{...}{Other parameter for print.}
 }

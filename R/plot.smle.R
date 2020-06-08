@@ -24,70 +24,123 @@
 #'
 
 plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,out_plot=5,...){
+
+
   Display <- match.arg(Display)
+
   oldpar <- par(no.readonly = TRUE)
+
   on.exit(par(oldpar))
+
   #-------------------check
   N_steps<-x$step
+
   l2_norm<-function(x){sqrt(sum(x^2))}
+
   l1_norm<-function(x){sum(abs(x))}
-  Feature_path<-x$Retained_Features_path
-  if(x$fast==T){stop("fast smle algorithm can't plot")}
+
+  Feature_path<-x$Path_Retained
+
+  if(x$fast==T){
+
+    stop("fast smle algorithm can't plot")
+
+    }
+
   if(x$k>30 & Display!="top_row"){
+
     stop("too much features to plot, try with Display=top_row")
+
   }
-  if("ctg" %in% class(x)){stop("Plots for categorical in not implement yet.")}
   #--------------------plot-------------
   if(out_plot==5){
+
   par(mfrow=c(2,2))
+
   plot(y=x$LH,x=1:N_steps,xlab ="steps",ylab = 'Likelihood')
+
   title("Likelihood vs steps")
-  plot(apply((x$Retained_Features_path[,-1]-x$Retained_Features_path[,-(N_steps+1)]),2,l2_norm),x=1:N_steps,xlab = "steps",ylab="square_difference")
+
+  plot(apply((x$Path_Retained[,-1]-x$Path_Retained[,-(N_steps+1)]),2,l2_norm),x=1:N_steps,xlab = "steps",ylab="square_difference")
+
   title('||beta_{t-1}  - \\beta_{t} ||_2')
+
   plot(y=x$Uchecks,x=1:N_steps,xlab = "steps",ylab="number_of_Ucheck")
+
   title("Number of Uchecks.")
+
   plot(y=x$FD,x=1:N_steps,xlab ="steps",ylab="Retained feature change")
+
   title("Retained feature change")
+
   dev.new()
+
   if(Display =="top_row"){
-    if(is.null(num_path)){num_path=5}
-    num_path <-min(length(x$Retained_Feature_IDs),num_path)
+
+      if(is.null(num_path)){num_path=5}
+
+    num_path <-min(length(x$ID_Retained),num_path)
+
     TOP_value<-rep(0,5)
+
     TOP_value[1:num_path]<-sort(abs(Feature_path[,N_steps+1]),decreasing = T)[1:num_path]
+
     TOP_index<-(1:dim(x$I$CM)[2])[Feature_path[,N_steps+1]%in% cbind(TOP_value,-TOP_value)]
+
     TOP_index<-unique(c(TOP_index,which_path))
+
     Feature_path<-Feature_path[TOP_index,]
+
     plot(NULL, xlim=c(0,N_steps+1), ylim=c(floor(min(Feature_path[,])),ceiling(max(Feature_path[,]))),
          ylab="Coefficient", xlab="steps",...)
+
     title("Retained Features path")
+
     lines(rep(0,N_steps),lty=1,lwd=1,col="black")
+
     for(i in 1:length(TOP_index)){
-      beta<-rep(0,N_steps)
-      for(j in 1:N_steps){
-        beta[j]<-Feature_path[i,j]
-      }
-      lines(beta,lty=i,col=rainbow(length(TOP_index))[i])
+
+        beta<-rep(0,N_steps)
+
+        for(j in 1:N_steps){
+
+          beta[j]<-Feature_path[i,j]
+
+          }
+
+        lines(beta,lty=i,col=rainbow(length(TOP_index))[i])
     }
+
     legend("topright",lty=1:length(TOP_index),cex=0.5,col=rainbow(length(TOP_index)),
            legend=TOP_index,bty="n")
   }else{
-    plot(NULL, xlim=c(0,N_steps), ylim=c(floor(min(Feature_path[,N_steps])),ceiling(max(Feature_path[,N_steps]))),
-         ylab="Coefficient", xlab="steps",...)
-    title("Retained_Features_path")
-    for(i in x$Retained_Feature_IDs){
-      beta<-rep(0,N_steps)
-      for(j in 1:N_steps){
-        beta[j]<-Feature_path[i,j]
-      }
-      lines(beta)
-    }
+
+      plot(NULL, xlim=c(0,N_steps), ylim=c(floor(min(Feature_path[,N_steps])),ceiling(max(Feature_path[,N_steps]))),
+
+                ylab="Coefficient", xlab="steps",...)
+
+      title("Retained_Features_path")
+
+      for(i in x$ID_Retained){
+
+        beta<-rep(0,N_steps)
+
+        for(j in 1:N_steps){
+
+          beta[j]<-Feature_path[i,j]
+
+          }
+
+        lines(beta)
+
+        }
   }
   }else if(out_plot==1){
 
     par(mfrow=c(2,2))
     if(Display =="top_row"){
       if(is.null(num_path)){num_path=5}
-      num_path <-min(length(x$Retained_Feature_IDs),num_path)
+      num_path <-min(length(x$ID_Retained),num_path)
       TOP_value<-rep(0,5)
       TOP_value[1:num_path]<-sort(abs(Feature_path[,N_steps+1]),decreasing = T)[1:num_path]
       TOP_index<-(1:dim(x$I$CM)[2])[Feature_path[,N_steps+1]%in% cbind(TOP_value,-TOP_value)]
@@ -110,7 +163,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
       plot(NULL, xlim=c(0,N_steps), ylim=c(floor(min(Feature_path[,N_steps])),ceiling(max(Feature_path[,N_steps]))),
            ylab="Coefficient", xlab="steps",...)
       title("Retained_Features_path")
-      for(i in x$Retained_Feature_IDs){
+      for(i in x$ID_Retained){
         beta<-rep(0,N_steps)
         for(j in 1:N_steps){
           beta[j]<-Feature_path[i,j]
@@ -119,11 +172,11 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
       }
     }
 
-    plot(apply((x$Retained_Features_path[,-1]-x$Retained_Features_path[,-(N_steps+1)]),2,l2_norm),x=1:N_steps,xlab = "steps",ylab="square_difference")
+    plot(apply((x$Path_Retained[,-1]-x$Path_Retained[,-(N_steps+1)]),2,l2_norm),x=1:N_steps,xlab = "steps",ylab="square_difference")
     title('||beta_{t-1}  - \\beta_{t} ||_2')
     plot(y=x$Uchecks,x=1:N_steps,xlab = "steps",ylab="number_of_Ucheck")
     title("Number of Uchecks.")
-    #plot(apply(x$Retained_Features_path[,-1],2,l2_norm),x=1:N_steps,xlab = "steps",ylab="L_2 norm")
+    #plot(apply(x$Path_Retained[,-1],2,l2_norm),x=1:N_steps,xlab = "steps",ylab="L_2 norm")
     #title("L_2 norm of Retained Features ")
     plot(y=x$FD,x=1:N_steps,xlab ="steps",ylab="Retained feature change")
     title("Retained feature change")
@@ -135,7 +188,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
     par(mfrow=c(2,2))
     if(Display =="top_row"){
       if(is.null(num_path)){num_path=5}
-      num_path <-min(length(x$Retained_Feature_IDs),num_path)
+      num_path <-min(length(x$ID_Retained),num_path)
       TOP_value<-rep(0,5)
       TOP_value[1:num_path]<-sort(abs(Feature_path[,N_steps+1]),decreasing = T)[1:num_path]
       TOP_index<-(1:dim(x$I$CM)[2])[Feature_path[,N_steps+1]%in% cbind(TOP_value,-TOP_value)]
@@ -158,7 +211,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
       plot(NULL, xlim=c(0,N_steps), ylim=c(floor(min(Feature_path[,N_steps])),ceiling(max(Feature_path[,N_steps]))),
            ylab="Coefficient", xlab="steps")
       title("Retained_Features_path")
-      for(i in x$Retained_Feature_IDs){
+      for(i in x$ID_Retained){
         beta<-rep(0,N_steps)
         for(j in 1:N_steps){
           beta[j]<-Feature_path[i,j]
@@ -170,20 +223,20 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
     title("Likelihood vs steps")
     plot(y=x$Uchecks,x=1:N_steps,xlab = "steps",ylab="number_of_Ucheck")
     title("Number of Uchecks.")
-    #plot(apply(x$Retained_Features_path[,-1],2,l2_norm),x=1:N_steps,xlab = "steps",ylab="L_2 norm")
+    #plot(apply(x$Path_Retained[,-1],2,l2_norm),x=1:N_steps,xlab = "steps",ylab="L_2 norm")
     #title("L_2 norm of Retained Features ")
     plot(y=x$FD,x=1:N_steps,xlab ="steps",ylab="Retained feature change")
     title("Retained feature change")
 
     dev.new()
-    plot(apply((x$Retained_Features_path[,-1]-x$Retained_Features_path[,-(N_steps+1)]),2,l2_norm),
+    plot(apply((x$Path_Retained[,-1]-x$Path_Retained[,-(N_steps+1)]),2,l2_norm),
          x=1:N_steps,xlab = "steps",ylab="square_difference",...)
     title('||beta_{t-1}  - \\beta_{t} ||_2')
   }else if(out_plot==3){
     par(mfrow=c(2,2))
     if(Display =="top_row"){
       if(is.null(num_path)){num_path=5}
-      num_path <-min(length(x$Retained_Feature_IDs),num_path)
+      num_path <-min(length(x$ID_Retained),num_path)
       TOP_value<-rep(0,5)
       TOP_value[1:num_path]<-sort(abs(Feature_path[,N_steps+1]),decreasing = T)[1:num_path]
       TOP_index<-(1:dim(x$I$CM)[2])[Feature_path[,N_steps+1]%in% cbind(TOP_value,-TOP_value)]
@@ -206,7 +259,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
       plot(NULL, xlim=c(0,N_steps), ylim=c(floor(min(Feature_path[,N_steps])),ceiling(max(Feature_path[,N_steps]))),
            ylab="Coefficient", xlab="steps")
       title("Retained_Features_path")
-      for(i in x$Retained_Feature_IDs){
+      for(i in x$ID_Retained){
         beta<-rep(0,N_steps)
         for(j in 1:N_steps){
           beta[j]<-Feature_path[i,j]
@@ -216,9 +269,9 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
     }
     plot(y=x$LH,x=1:N_steps,xlab ="steps",ylab = 'Likelihood')
     title("Likelihood vs steps")
-    plot(apply((x$Retained_Features_path[,-1]-x$Retained_Features_path[,-(N_steps+1)]),2,l2_norm),x=1:N_steps,xlab = "steps",ylab="square_difference")
+    plot(apply((x$Path_Retained[,-1]-x$Path_Retained[,-(N_steps+1)]),2,l2_norm),x=1:N_steps,xlab = "steps",ylab="square_difference")
     title('||beta_{t-1}  - \\beta_{t} ||_2')
-    #plot(apply(x$Retained_Features_path[,-1],2,l2_norm),x=1:N_steps,xlab = "steps",ylab="L_2 norm")
+    #plot(apply(x$Path_Retained[,-1],2,l2_norm),x=1:N_steps,xlab = "steps",ylab="L_2 norm")
     #title("L_2 norm of Retained Features ")
     plot(y=x$FD,x=1:N_steps,xlab ="steps",ylab="Retained feature change")
     title("Retained feature change")
@@ -229,7 +282,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
     par(mfrow=c(2,2))
     if(Display =="top_row"){
       if(is.null(num_path)){num_path=5}
-      num_path <-min(length(x$Retained_Feature_IDs),num_path)
+      num_path <-min(length(x$ID_Retained),num_path)
       TOP_value<-rep(0,5)
       TOP_value[1:num_path]<-sort(abs(Feature_path[,N_steps+1]),decreasing = T)[1:num_path]
       TOP_index<-(1:dim(x$I$CM)[2])[Feature_path[,N_steps+1]%in% cbind(TOP_value,-TOP_value)]
@@ -252,7 +305,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
       plot(NULL, xlim=c(0,N_steps), ylim=c(floor(min(Feature_path[,N_steps])),ceiling(max(Feature_path[,N_steps]))),
            ylab="Coefficient", xlab="steps",...)
       title("Retained_Features_path")
-      for(i in x$Retained_Feature_IDs){
+      for(i in x$ID_Retained){
         beta<-rep(0,N_steps)
         for(j in 1:N_steps){
           beta[j]<-Feature_path[i,j]
@@ -262,12 +315,12 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
     }
     plot(y=x$LH,x=1:N_steps,xlab ="steps",ylab = 'Likelihood')
     title("Likelihood vs steps")
-    plot(apply((x$Retained_Features_path[,-1]-x$Retained_Features_path[,-(N_steps+1)]),2,l2_norm),x=1:N_steps,xlab = "steps",ylab="square_difference")
+    plot(apply((x$Path_Retained[,-1]-x$Path_Retained[,-(N_steps+1)]),2,l2_norm),x=1:N_steps,xlab = "steps",ylab="square_difference")
     title('||beta_{t-1}  - \\beta_{t} ||_2')
     plot(y=x$Uchecks,x=1:N_steps,xlab = "steps",ylab="number_of_Ucheck")
     title("Number of Uchecks.")
     dev.new()
-    #plot(apply(x$Retained_Features_path[,-1],2,l2_norm),x=1:N_steps,xlab = "steps",ylab="L_2 norm",...)
+    #plot(apply(x$Path_Retained[,-1],2,l2_norm),x=1:N_steps,xlab = "steps",ylab="L_2 norm",...)
     #title("L_2 norm of Retained Features ")
     plot(y=x$FD,x=1:N_steps,xlab ="steps",ylab="Retained feature change")
     title("Retained feature change")

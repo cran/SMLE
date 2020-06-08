@@ -2,42 +2,61 @@
 % Please edit documentation in R/Gen_Data.R
 \name{Gen_Data}
 \alias{Gen_Data}
-\title{Data simulator for high-dimensional GLMs}
+\title{Data simulator for high-dimensional}
 \usage{
-Gen_Data(n = 200, p = 5000, num_ctgidx = NULL, pos_ctgidx = NULL,
-  num_truecoef = NULL, pos_truecoef = NULL, correlation = c("ID",
-  "AR", "MA", "CS"), rho = 0.5, family = c("gaussian", "binomial",
-  "poisson"))
+Gen_Data(
+  n = 200,
+  p = 5000,
+  sigma = 1,
+  num_ctgidx = NULL,
+  pos_ctgidx = NULL,
+  num_truecoef = NULL,
+  pos_truecoef = NULL,
+  level_ctgidx = NULL,
+  effect_truecoef = NULL,
+  correlation = c("ID", "AR", "MA", "CS"),
+  rho = 0.5,
+  family = c("gaussian", "binomial", "poisson")
+)
 }
 \arguments{
-\item{n}{Sample size, number of rows of the data.frame (or matrix).}
+\item{n}{Sample size, number of rows of for the feature matrix to be generated.}
 
-\item{p}{Number of features.}
+\item{p}{number of columns for the feature matrix to be generated.}
+
+\item{sigma}{Parameter for noise level.}
 
 \item{num_ctgidx}{The number of features that are categorical. Set to FALSE for only numerical features. Default is FALSE.}
 
 \item{pos_ctgidx}{Vector of indices denoting which columns are categorical.}
 
-\item{num_truecoef}{The number of features that affect response. Default is 5.}
+\item{num_truecoef}{The number of features (columns) that affect response. Default is 5.}
 
-\item{pos_truecoef}{Vector of indices denoting which columns affect the response variable.}
+\item{pos_truecoef}{Vector of indices denoting which features (columns) affect the response variable.}
 
-\item{correlation}{correlation structure between features. \code{correlation = 'ID'} for all variables independent,
-\code{correlation = 'MA'} for moving average, \code{correlation = 'CS'} for compound symmetry, \code{correlation = 'AR'} for auto correlation. Default is "independent".
-For more information see details.}
+\item{level_ctgidx}{A vector to indicate the levels of categorical features in 'pos_ctgidx'. Default is 2.}
 
-\item{rho}{Parameter for AR(1) data, when correlation = "AR". Default is 0.5.}
+\item{effect_truecoef}{Effects for the relevant features in 'pos_truecoef'.}
 
-\item{family}{Response type.
+\item{correlation}{Correlation structure among features. \code{correlation = 'ID'} for independent,
+\code{correlation = 'MA'} for moving average, \code{correlation = 'CS'} for compound symmetry, \code{correlation = 'AR'} for auto regressive Default is "ID".For more information see details.}
+
+\item{rho}{Parameter controlling the correlation strength. See details.}
+
+\item{family}{Models to generate the response from the synthetic features:
 \code{'gaussian'} for normally distributed data, \code{'poisson'} for non-negative counts,
 \code{'binomial'} for binary (0-1).}
 }
 \value{
 Returns a \code{"sdata"} object with
+
 \item{Y}{Response variable vector of length \eqn{n}}
+
 \item{X}{Feature matrix or Dataframe (Matrix if \code{num_ctgidx =FALSE} and dataframe otherwise)}
-\item{index}{Vector of columns indices of X for the features that affect the response variables (causal features).}
-\item{Beta}{Vector of effects for the causal features.}
+
+\item{index}{Vector of columns indices of X for the features that affect the response variables (relevant features).}
+
+\item{Beta}{Vector of effects for the relevant features.}
 }
 \description{
 This function generates synthetic datasets from GLMs with a user-specified correlation structure.
@@ -45,21 +64,34 @@ It permits both numerical and categorical features, whose quantity can be larger
 }
 \details{
 Simulated data \eqn{(y_i , x_i)} for \eqn{i = 1, . . . , n} are generated as follows:
-First, randomly sample \code{num_truecoef} important features among the \code{p} features, the magnitude of the effects from a U(0,1) and the sign of the effect randomly(\eqn{\beta}'s).
-Second, generate X using theselected correlation structure (independent,  auto-regressive, moving average, compound symmetry). Then, to generating categorical data, we convert numerical
-features to categorical by binning value. We randomly select num_ctgixdx numerical columns and convert them into a four level factor.
+First, we generate a \eqn{p \times 1} model coefficient vector beta with all entries being zero, except on the positions specified in \code{pos_truecoef},
+on which \code{effect_truecoef} is used. When \code{pos_truecoef} is not specified, we randomly choose \code{num_truecoef} positions from the coefficient
+vector. When \code{effect_truecoef} is not specified, we randomly set the strength of the true model coefficients following Chen's setting:
+\deqn{(4*\frac{\log{N}}{\sqrt{N}}+U(0,1))*Z}
+where U is uniform distribution.  and \eqn{P(Z=1)=1/2,P(Z=-1)=1/2}.
 
-Moving average: candidate features \eqn{x_1,..., x_p} are joint normal,
-marginally N(0, 1), with \eqn{cov(x_j, x_{j-1}) = \frac{2}{3}}, \eqn{cov(x_j, x_{j-2}) = \frac{1}{3}} and \eqn{cov(x_j, x_h) = 0} for \eqn{|j-h| \geq 3}.
+Next, we generate a \eqn{n \times p} feature matrix X based on the choice in
+\code{correlation} specified as follows.
 
-Compound symmetry: candidate features \eqn{x_1,..., x_p} are joint normal, marginally N(0, 1), with \eqn{cov(x_j, x_h) =0.15} if \eqn{\ j\ ,\ h\ } are both in the set of important features and \eqn{cov(x_j, x_h) = 0.3} when only
-one of \eqn{j} or \eqn{h} are in the set of important features.
+Independent (ID):  all features are independently generated from \eqn{N( 0, 1)}.
 
-Auto-regressive: candidate features \eqn{x_1,..., x_p} are joint normal marginally N(0, 1), with \eqn{cov(x_j, x_{j+1}) = \rho} for all \eqn{j}.
+Moving average (MA): candidate features \eqn{x_1,..., x_p} are joint normal,
+marginally \eqn{N( 0, 1)}, with
 
-Then, generate the response variable Y according to its response type. For Gaussian model, \eqn{Y =x^T \cdot \beta + \epsilon} where \eqn{\epsilon \in N(0,1)}.
+cov\eqn{(x_j, x_{j-1}) = \rho}, cov\eqn{(x_j, x_{j-2}) = \frac{\rho}{2}} and cov\eqn{(x_j, x_h) = 0} for \eqn{|j-h| \geq 3}.
+
+Compound symmetry (CS): candidate features \eqn{x_1,..., x_p} are joint normal, marginally \eqn{N( 0, 1)}, with cov\eqn{(x_j, x_h) =  \rho} if \eqn{j} ,\eqn{h}
+are both in the set of important features and \eqn{cov(x_j, x_h) = \frac{\rho}{2}} when only
+one of \eqn{j} or \eqn{h} are iOn the set of important features.
+
+Auto-regressive (AR): candidate features \eqn{x_1,..., x_p} are joint normal marginally \eqn{N( 0, 1)}, with
+
+cov\eqn{(x_j, x_h) = \rho^{|j-h|}} for all \eqn{j} and \eqn{h}.
+
+Then, generate the response variable Y according to its response type. For Gaussian model, \eqn{Y =x^T \cdot \beta + \epsilon} where \eqn{\epsilon\ \in} \eqn{N( 0, 1)}.
 For the binary model let \eqn{\pi = P(Y = 1|x)}. Sample y from Bernoulli(\eqn{\pi}) where \eqn{logit(\pi) = x^T \cdot\beta}.
-Finally, for the Poisson model, Y is generated from Poisson distribution with the link \eqn{\pi =exp(x^T \cdot \beta )}. For more details (see reference below)
+Finally, for the Poisson model, Y is generated from Poisson distribution with the link \eqn{\pi =exp(x^T \cdot \beta )}.
+For more details (see reference below)
 }
 \examples{
 #Simulating data with binomial response and independent strcture.

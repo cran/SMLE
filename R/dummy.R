@@ -1,12 +1,18 @@
-dummy <- function( x, data=NULL, sep="", drop=TRUE, fun=as.integer, verbose = FALSE,codingtype=c("standard","all","DV") ) {
+dummy <- function( x, data=NULL, sep="_", drop=TRUE, fun=as.integer, verbose = FALSE,codingtype=c("standard","all","DV") ) {
 
 
   # HANDLE IF DATA IS MISSING.
   if( is.null(data) ) {
+
+
     name <- as.character( sys.call(1) )[2]
     name <- sub( "^(.*\\$)", "", name )    # REMOVE prefix e.f
     name <- sub( "\\[.*\\]$", "", name )   # REMOVE suffix
+
+
   } else {
+
+
     if( length(x) > 1 ) stop( "More than one variable provided to produce dummy variable." )
     name <- x
     x    <- data[ , name]
@@ -39,36 +45,58 @@ dummy <- function( x, data=NULL, sep="", drop=TRUE, fun=as.integer, verbose = FA
 
   # GET THE MODEL MATRIX
   if(codingtype=="all"){
-  mm <- model.matrix( ~ x  - 1 , model.frame( ~ x -1 ),  contrasts=FALSE )
-  } 
-  else if(codingtype=="standard"){
-    mm <- model.matrix( ~ x , model.frame( ~ x),  contrasts=FALSE )
-    mm <- mm[,-1]
-  }else{ 
-    mm <- model.matrix( ~ x-1 , model.frame( ~ x -1),  contrasts=FALSE )
-    for(j in 1:dim(mm)[1]){
-      if(mm[j,1]==1){
-        mm[j,]=-1
-        }
-      }
-    mm <- mm[,-1]/2
-    
-    }
+
+  mm <- model.matrix( ~ x  - 1 , model.frame( ~ x - 1 ) )
 
   colnames.mm <- colnames(mm)
 
-  if( verbose ) cat( " ", name, ":", ncol(mm), "dummy varibles created\n" )
+  message( " ", name, ":", ncol(mm), "dummy varibles created\n" )
 
   mm <- matrix( mm, nrow=nrow(mm), ncol=ncol(mm), dimnames=list(NULL, colnames.mm) )
 
   # Replace the column names 'x'... with the true variable name and a seperator
-  colnames(mm) <- sub( "^x", paste( name, sep, sep="" ), colnames(mm) )
+  colnames(mm) <- sub( "^x", paste( name, sep, sep="_" ), colnames(mm) )
   if(! is.null(row.names(data)) ) rownames(mm) <- rownames(data)
 
   return(mm)
 
+
+  }
+
+  else if(codingtype=="standard"){
+
+    mm <- model.matrix( ~ x , model.frame( ~ x) )
+
+    MM <- mm[,-1]
+
+  }else{
+
+    mm <- model.matrix( ~ x - 1 , model.frame( ~ x -1) )
+
+    levels<- ncol(mm)
+
+    MM<-mm[,-1]- (1/levels)
+
+    }
+
+  colnames.MM <- colnames(mm)[-1]
+
+  message( " ", name, ":", ncol(mm)-1, "dummy varibles created\n" )
+
+  MM <- matrix( MM, nrow=nrow(mm), dimnames=list(NULL, colnames.MM) )
+
+  # Replace the column names 'x'... with the true variable name and a seperator
+  colnames(MM) <- sub( "^x", paste( name, sep, sep="_" ), colnames(mm)[-1] )
+  if(! is.null(row.names(data)) ) rownames(MM) <- rownames(data)
+
+  return(MM)
+
 }
-dummy.data.frame <- function( data,codingtype=c("standard","all","DV"), omit.constants = TRUE, 
+
+
+dummy.data.frame <- function( data,codingtype=c("standard","all","DV"), omit.constants = TRUE,
+
+
                               dummy.classes=getOption("dummy.classes"), all=TRUE, ... ) {
   codingtype<-match.arg(codingtype)
 
@@ -81,9 +109,9 @@ dummy.data.frame <- function( data,codingtype=c("standard","all","DV"), omit.con
     # cat( nm )
     old.attr <- attr(df,'dummies')
 
-    if((class(data[,nm])[1] %in% dummy.classes )) 
+    if((class(data[,nm])[1] %in% dummy.classes ))
      {
-      dummies <- dummy( nm, data, codingtype= codingtype,... )
+      dummies <- dummy( nm, data, codingtype= codingtype )
 
       # OMIT CONSTANT COLUMNS:
       #  Variables that are constant will return a matrix with one column

@@ -4,7 +4,7 @@
 #' In particular, it shows the features retained after SMLE-screening
 #' and the related convergence information.
 #'
-#' @param x Fitted \code{"smle"} object.
+#' @param x Fitted '\code{smle}' object.
 #' @param ... Other parameter for print.
 #' @return
 #' No return value, called for side effects.
@@ -17,16 +17,35 @@
 print.smle=function(x,...){
 
   cat("\nCall: ", deparse(x$call), "\n\n")
-  Description<-data.frame("Dim_of_Y" = paste(c(dim(x$I$CM)[1],1),collapse = ' x '),
-                          "Dim_of_X" = paste(dim(x$I$CM),collapse = ' x '),
-                          "Model_Type"= .simpleCap(x$family),
-                          "Retained_model_size"= as.character(x$k),
-                          "Retained_features"=paste("V",x$Retained_Feature_IDs,sep='',collapse=' '),
-                          "Coefficients" = paste(format(x$Coefficients_of_Retained_Features, digits = 3),collapse = ' '),
-                          "Number_of_steps" = as.character(x$steps))
-  if("ctg" %in% class(x)){cbind(Description,"categorical_features" = x$I$CI,
-                                "levels" =x$I$nlevel)}
 
- print(t(Description),...)
+  Description<-data.frame("Dim_of_Y :" = paste(c(dim(x$I$CM)[1],1),collapse = ' x '),
+
+                          "Dim_of_X :" = paste(dim(x$I$CM),collapse = ' x '),
+
+                          "Model_Type :"= .simpleCap(x$family),
+
+                          "Retained_model_size :"= as.character(x$Num_Retained),
+
+                          "Retained_features :"=paste("V",x$ID_Retained,sep='',collapse=' '),
+
+                          "Coefficients :" = paste(format(x$Coef_Retained, digits = 3),collapse = ' '),
+
+                          "Number_of_steps :" = as.character(x$steps))
+
+  if( !is.null(x$Intercept) ){
+
+    Description <- cbind ( Description, "Intercept :" = as.character(x$Intercept) )
+
+    }
+
+  if("ctg" %in% class(x)){
+
+    Description <- cbind(Description,
+                         "Categorical_features :" =paste("C", x$I$CI, sep='',collapse = ' '      ),
+                          "Level_of_categories  :" =paste(sapply(x$I$CM[,x$I$CI],nlevels) , collapse = ', '))
+    }
+
+  message(paste0(capture.output(t(Description)), collapse = "\n"))
+
 }
 

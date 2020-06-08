@@ -1,9 +1,9 @@
-#' Plots to visualize the selection steps
+#' Plots to visualize the selection
 #'
 #' @description
 #' This function constructs a sparsity vs. selection criterion curve for a selection object.
 #'  When EBIC is used with voting, it also constructs a histogram showing the voting result.
-#' @param x Fitted \code{"selection"} object from smle_select.
+#' @param x Fitted \code{'selection'} object from \code{smle_select}.
 #' @param ... Other graphical parameters to plot.
 #' @method plot selection
 #' @return
@@ -24,8 +24,8 @@ plot.selection<-function(x,...){
     percent <- function(x, digits = 2, format = "f", ...) {
       paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
     }
-    y<-data.frame("Proportion"= sort(summary(x$Voting_Retained_Feature_IDs),decreasing = T)/20)
-    barplot(y$Proportion,names.arg = as.numeric(names(summary(x$Voting_Retained_Feature_IDs))),
+    y<-data.frame("Proportion"= sort(summary(x$ID_voted),decreasing = T)/20)
+    barplot(y$Proportion,names.arg = as.numeric(names(summary(x$ID_voted))),
             xlab = "Retrained Features IDs",ylab="Featrues Voting Proportion",main="Voting results",
             )
   }

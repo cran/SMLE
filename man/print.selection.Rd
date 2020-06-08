@@ -7,7 +7,7 @@
 \method{print}{selection}(x, ...)
 }
 \arguments{
-\item{x}{Fitted \code{"selection"} object.}
+\item{x}{Fitted \code{'selection'} object.}
 
 \item{...}{Other parameter to print.}
 }
@@ -15,8 +15,8 @@
 No return value, called for side effects.
 }
 \description{
-This function prints a summary of a selection object.
-In particular, it gives the selected features along with their re-fitted model coefficient.
+This function prints a summary of a \code{'selection'} object.
+In particular, it gives the selected features along with their re-fitted model coefficients.
 For reference, it also shows the values of the selection criterion used in selection for all candidate models.
 }
 \examples{

@@ -11,59 +11,94 @@ smle_select(x, ...)
 
 \method{smle_select}{smle}(x, ...)
 
-\method{smle_select}{sdata}(x, k_min = 1, k_max = 10,
-  sub_model = NULL, gamma_ebic = 0.5, vote = FALSE,
-  tune = c("ebic", "aic", "bic"), gamma_seq = c(seq(0, 1, 0.2)),
-  vote_threshold = NULL, para = FALSE, num_cores = NULL, ...)
+\method{smle_select}{sdata}(
+  x,
+  k_min = 1,
+  k_max = 10,
+  sub_model = NULL,
+  gamma_ebic = 0.5,
+  vote = FALSE,
+  tune = c("ebic", "aic", "bic"),
+  codingtype = NULL,
+  gamma_seq = c(seq(0, 1, 0.2)),
+  vote_threshold = NULL,
+  para = FALSE,
+  num_cores = NULL,
+  ...
+)
 
 \method{smle_select}{default}(x, X = NULL, family = "gaussian", ...)
 }
 \arguments{
-\item{x}{Object of class "smle" or "sdata", or directly input data pair (Y,X).}
+\item{x}{Object of class \code{'smle'} or \code{'sdata'}. Users can also
+input a response vector and a feature matrix. See examples}
 
 \item{...}{Other parameters.}
 
-\item{k_min}{The lower bound of target model sparsity. Default is 1.}
+\item{k_min}{The lower bound of candidate model sparsity. Default is 1.}
 
-\item{k_max}{The upper bound of target model sparsity. Default is as same as the number of columns in input.}
+\item{k_max}{The upper bound of candidate model sparsity. Default is as same
+as the number of columns in input.}
 
-\item{sub_model}{A subset of columns indicating that which columns are able to be selected.(Only for object of "sdata" and (Y,X) pair)}
+\item{sub_model}{A index vector indicating which features (columns of the
+feature matrix) are to be selected.  Not applicable if a \code{'smle'}
+object is the input.}
 
-\item{gamma_ebic}{Parameter for Extended Bayesian Information Criteria. Must be v between (0, 1). Default is 0.5.}
+\item{gamma_ebic}{The EBIC parameter in \eqn{[0 , 1]}. Default is 0.5.}
 
-\item{vote}{The logical flog for whether to perform the voting procedure. Only available when \code{tune ='ebic'}.}
+\item{vote}{The logical flag for whether to perform the voting procedure.
+Only available when \code{tune ='ebic'}.}
 
-\item{tune}{Selection criterion, must bu one of  \code{'aic','bic', or 'ebic'}. Default is 'ebic'.}
+\item{tune}{Selection criterion. Default is \code{ebic}.}
+
+\item{codingtype}{Coding types for categorical features; details see SMLE.}
 
 \item{gamma_seq}{The sequence of values for gamma_ebic when \code{vote =TRUE}.}
 
-\item{vote_threshold}{A relative voting threshold in percentage. A feature is considered to be important when it receives votes passing the threshold.}
+\item{vote_threshold}{A relative voting threshold in percentage. A feature is
+considered to be important when it receives votes passing the threshold.}
 
-\item{para}{Logical flag to use parallel computing to do voting selection. Default is FALSE. see Details.}
+\item{para}{Logical flag to use parallel computing to do voting selection.
+Default is FALSE. See Details.}
 
-\item{num_cores}{The number of cores to use. The default will be all cores detected.}
+\item{num_cores}{The number of cores to use. The default will be all cores
+detected.}
 
-\item{X}{Input features matrix.}
+\item{X}{Input features matrix. When feature matrix input by users.}
 
-\item{family}{Response type (see SMLE); default is gaussian. When input object is smle or sdata, the same model will be used in the selection step.}
+\item{family}{Model assumption; see SMLE. Default is Gaussian linear.
+
+When input is \code{'smle'} or \code{'sdata'}, the same
+model will be used in the selection.}
 }
 \value{
-Returns a \code{"selection"} object with
-\item{Retained_Feature_IDs}{A list of varible IDs selected.}
-\item{Coeffients_of_Retained_Features}{A list of coefficients for selected features fit by glmnet }
-\item{Criterion_value}{A list of value according to selected criteria and model sparisity.}
-\item{Voting_Retained_Feature_IDs}{A list of Voting selection results; item returned only when vote==T}
+Returns a \code{'selection'} object with
+\item{ID_Selected}{A list of selected features.}
+\item{Coef_Selected}{Fitted model coefficients based on the selected
+features.}
+\item{Criterion_value}{Values of selection criterion for the candidate models
+with various sparsity.}
+\item{ID_Voted}{A list of Voting selection results; item returned only when
+\code{vote==T}.}
 }
 \description{
-Given a response and a set of \code{K} features, this function first runs \code{SMLE (fast=TRUE)} to generate a series of sub-models with sparsity \code{k} varying from \code{k_min} to \code{k_max}.
+Given a response and a set of \code{K} features, this function
+first runs \code{SMLE (fast=TRUE)} to generate a series of sub-models with
+sparsity \code{k} varying from \code{k_min} to \code{k_max}.
 It then selects the best model from the series based on a selection criterion.
-When criterion EBIC is used, users can choose to repeat the selection with different values of the tuning parameter, gamma, and conduct importance voting for each feature.
+When criterion EBIC is used, users can choose to repeat the selection with
+different values of the tuning parameter, \eqn{\gamma}, and
+conduct importance voting for each feature.
 }
 \details{
-There are three types of input allowed:
-Object with class "smle", the output from main function SMLE;
-Object with class "sdata", the ouput from Gen_Data;
-Input data pair directly by Y, X. It is not recommender to use object of type sdata or the data matrices X,Y for high demensional data.
+This functions accepts three types of input for GLMdata;
+1. \code{'smle'} object, as the output from SMLE;
+2. \code{'sdata'} object, as the output from Gen_Data;
+3. Other response and feature matrix input by users.
+
+Note that this function is mainly design to conduct an elaborative selection
+after feature screening. We do not recommend using it directly for
+ultra-high-dimensional data without screening.
 }
 \examples{
 
@@ -74,9 +109,6 @@ E<-smle_select(fit)
 plot(E)
 }
 \references{
-Chen. J. and Chen. Z. (2012). "Extended BIC for small-n-large-P sparse GLM." \emph{Statistica Sinica}: 555-574.
-
-Chen. J. and Chen. Z. (2008). "Extended Bayesian information criteria for model selection with large model spaces."  \emph{Biometrika} 95.3: 759-771.
-
-Chen, Z. and Chen. J. (2009). "Tournament screening cum EBIC for feature selection with high-dimensional feature spaces." \emph{Science in China Series A: Mathematics} 52.6 : 1327-1341.
+Chen. J. and Chen. Z. (2012). "Extended BIC for small-n-large-P sparse GLM."
+\emph{Statistica Sinica}: 555-574.
 }

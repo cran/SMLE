@@ -2,12 +2,12 @@
 % Please edit documentation in R/plot.selection.R
 \name{plot.selection}
 \alias{plot.selection}
-\title{Plots to visualize the selection steps}
+\title{Plots to visualize the selection}
 \usage{
 \method{plot}{selection}(x, ...)
 }
 \arguments{
-\item{x}{Fitted \code{"selection"} object from smle_select.}
+\item{x}{Fitted \code{'selection'} object from \code{smle_select}.}
 
 \item{...}{Other graphical parameters to plot.}
 }

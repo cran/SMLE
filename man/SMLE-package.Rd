@@ -5,7 +5,7 @@
 Joint SMLE-screening for generalized linear models
 }
 \description{
-Feature screening is a powerful tool in processing ultra-high dimensional data. It attempts to screen out most irrelevant features before an elaborative analysis. This package provides an efficient implementation of SMLE-screening for linear, logistic, and Poisson models, where joint effects among features are naturally incorporated in the screening process. The package also provides a function for conducting feature selection based on user-specified selection criterion after screening.
+Feature screening is a powerful tool in processing ultra-high dimensional data. It attempts to screen out most irrelevant features before an elaborative analysis. This package provides an efficient implementation of SMLE-screening for linear, logistic, and Poisson models, where joint effects among features are naturally incorporated in the screening process. The package also provides a function for conducting feature selection based on a user-specified selection criterion after screening.
 }
 \details{
 \tabular{ll}{
@@ -15,7 +15,7 @@ Version: \tab 0.2\cr
 Date: \tab 2020-01-29\cr
 License: \tab GPL-2\cr
 }
-Input a \eqn{n \times 1} response vector Y and a \eqn{n \times p} predictor (feature) matrix X. The package outputs a set of \eqn{k < n} predictors that seem to be most relevant for joint regression. Moreover, the package provides a data simulator that generates a synthetic data set from high-dimensional GLMs, which accommodates commonly used correlation structures among numerical and categorical features. \cr
+Input a \eqn{n \times 1} response vector Y and a \eqn{n \times p} predictor (feature) matrix X. The package outputs a set of \eqn{k < n} features that seem to be most relevant for joint regression. Moreover, the package provides a data simulator that generates a synthetic datasets from high-dimensional GLMs, which accommodate both numerical and categorical features with commonly used correlation structures. \cr
 
 Important functions:\cr
 \code{Gen_Data}\cr

@@ -4,8 +4,14 @@
 \alias{plot.smle}
 \title{Plots to visualize the SMLE screening step}
 \usage{
-\method{plot}{smle}(x, Display = c("top_row", "all"), num_path = NULL,
-  which_path = NULL, out_plot = 5, ...)
+\method{plot}{smle}(
+  x,
+  Display = c("top_row", "all"),
+  num_path = NULL,
+  which_path = NULL,
+  out_plot = 5,
+  ...
+)
 }
 \arguments{
 \item{x}{Fitted  \code{"smle"} object from SMLE.}

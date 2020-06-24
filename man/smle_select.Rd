@@ -18,7 +18,7 @@ smle_select(x, ...)
   sub_model = NULL,
   gamma_ebic = 0.5,
   vote = FALSE,
-  tune = c("ebic", "aic", "bic"),
+  tune = "ebic",
   codingtype = NULL,
   gamma_seq = c(seq(0, 1, 0.2)),
   vote_threshold = NULL,
@@ -33,7 +33,7 @@ smle_select(x, ...)
 \item{x}{Object of class \code{'smle'} or \code{'sdata'}. Users can also
 input a response vector and a feature matrix. See examples}
 
-\item{...}{Other parameters.}
+\item{...}{Further arguments passed to or from other methods.}
 
 \item{k_min}{The lower bound of candidate model sparsity. Default is 1.}
 
@@ -47,7 +47,8 @@ object is the input.}
 \item{gamma_ebic}{The EBIC parameter in \eqn{[0 , 1]}. Default is 0.5.}
 
 \item{vote}{The logical flag for whether to perform the voting procedure.
-Only available when \code{tune ='ebic'}.}
+Only available when \code{tune ='ebic'}.
+fit}
 
 \item{tune}{Selection criterion. Default is \code{ebic}.}
 

@@ -150,9 +150,21 @@ DI2CI<-function(I,DI_index){
 
   for(i in 2:dim(I$IM)[2]){
 
-    if(i %in% DI_index && !(i %in% unlist(I$DFI))){CI_index<-append(CI_index,i-L)}
+    if(i %in% DI_index && !(i %in% unlist(I$DFI))){
 
-    if(i %in% DI_index && i %in% I$DI){CI_index<-append(CI_index,i-L)}
+      #ind not Dummy
+
+      CI_index<-append(CI_index,i-L)
+
+
+      }
+
+    if(i %in% DI_index && i %in% I$DI){
+
+
+      CI_index<-append(CI_index,i-L)
+
+      }
 
     if(i %in% DI_index && i %in% unlist(I$DFI) && !(i %in% I$DI)){CI_index<-append(CI_index,I$DI[j]-(L-I$dum_col[j]+1))}
 
@@ -169,17 +181,13 @@ GroupHard<-function(Beta_t,I,k,Screening_index,penalize_mod){
 
   #input Beta_t: a vector of length pp
 
-  x<-Group_Beta(Beta_t,I,penalize_mod)  # a vector of length p+1(intercept)
+  x<-Group_Beta(Beta_t,I,penalize_mod)[-1]  # length p (remove intercept)
 
   x[Screening_index]<-Hard(t=x[Screening_index], k=k)
 
-  CSI<-(1:(length(I$CM)+1))[x==0]
+  CSI<-(1:(length(I$CM)))[x==0]
 
-  #the position of coefficient zeros with intercept in CM
-
-  CSI<- CSI[-1]-1
-
-  #remove the intercept
+  #the position of coefficient zeros in CM
 
   DSI<-CI2DI(I,CSI)
 

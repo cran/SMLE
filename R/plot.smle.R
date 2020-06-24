@@ -12,7 +12,7 @@
 #' @param which_path A vector to control which features are shown in addition to the paths for the most significant coefficients if \code{type ="top_row"}.
 #' @param out_plot A number from 1 to 5 indicating which plot is to be shown in the separate window; the default for solution path plot is "5".
 #' See Description for plot labels 1-4.
-#' @param ... Other graphical parameters to plot.
+#' @param ... Additional arguments to the plot function.
 #' @return
 #' No return value, called for side effects.
 #' @export
@@ -41,12 +41,6 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
 
   Feature_path<-x$Path_Retained
 
-  if(x$fast==T){
-
-    stop("fast smle algorithm can't plot")
-
-    }
-
   if(x$k>30 & Display!="top_row"){
 
     stop("too much features to plot, try with Display=top_row")
@@ -61,9 +55,9 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
 
   title("Likelihood vs steps")
 
-  plot(apply((x$Path_Retained[,-1]-x$Path_Retained[,-(N_steps+1)]),2,l2_norm),x=1:N_steps,xlab = "steps",ylab="square_difference")
-
-  title('||beta_{t-1}  - \\beta_{t} ||_2')
+  plot(apply((x$Path_Retained[,-1]-x$Path_Retained[,-(N_steps+1)]),2,l2_norm)[-1],
+       x=1:(N_steps-1),xlab = "steps",ylab="||\\beta_{t-1}  - \\beta_{t} ||",
+       main="Euclidean distance between coefficient estimates" )
 
   plot(y=x$Uchecks,x=1:N_steps,xlab = "steps",ylab="number_of_Ucheck")
 
@@ -77,7 +71,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
 
   if(Display =="top_row"){
 
-      if(is.null(num_path)){num_path=5}
+    if(is.null(num_path)){num_path=5}
 
     num_path <-min(length(x$ID_Retained),num_path)
 
@@ -112,7 +106,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
     }
 
     legend("topright",lty=1:length(TOP_index),cex=0.5,col=rainbow(length(TOP_index)),
-           legend=TOP_index,bty="n")
+           legend=TOP_index-1,bty="n")
   }else{
 
       plot(NULL, xlim=c(0,N_steps), ylim=c(floor(min(Feature_path[,N_steps])),ceiling(max(Feature_path[,N_steps]))),
@@ -158,7 +152,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
         lines(beta,lty=i,col=rainbow(length(TOP_index))[i])
       }
       legend("topright",lty=1:length(TOP_index),cex=0.5,col=rainbow(length(TOP_index)),
-             legend=TOP_index,bty="n")
+             legend=TOP_index-1,bty="n")
     }else{
       plot(NULL, xlim=c(0,N_steps), ylim=c(floor(min(Feature_path[,N_steps])),ceiling(max(Feature_path[,N_steps]))),
            ylab="Coefficient", xlab="steps",...)
@@ -206,7 +200,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
         lines(beta,lty=i,col=rainbow(length(TOP_index))[i])
       }
       legend("topright",lty=1:length(TOP_index),cex=0.5,col=rainbow(length(TOP_index)),
-             legend=TOP_index,bty="n")
+             legend=TOP_index-1,bty="n")
     }else{
       plot(NULL, xlim=c(0,N_steps), ylim=c(floor(min(Feature_path[,N_steps])),ceiling(max(Feature_path[,N_steps]))),
            ylab="Coefficient", xlab="steps")
@@ -254,7 +248,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
         lines(beta,lty=i,col=rainbow(length(TOP_index))[i])
       }
       legend("topright",lty=1:length(TOP_index),cex=0.5,col=rainbow(length(TOP_index)),
-             legend=TOP_index,bty="n")
+             legend=TOP_index-1,bty="n")
     }else{
       plot(NULL, xlim=c(0,N_steps), ylim=c(floor(min(Feature_path[,N_steps])),ceiling(max(Feature_path[,N_steps]))),
            ylab="Coefficient", xlab="steps")
@@ -300,7 +294,7 @@ plot.smle<-function(x,Display=c("top_row","all"),num_path=NULL,which_path=NULL,o
         lines(beta,lty=i,col=rainbow(length(TOP_index))[i])
       }
       legend("topright",lty=1:length(TOP_index),cex=0.5,col=rainbow(length(TOP_index)),
-             legend=TOP_index,bty="n")
+             legend=TOP_index-1,bty="n")
     }else{
       plot(NULL, xlim=c(0,N_steps), ylim=c(floor(min(Feature_path[,N_steps])),ceiling(max(Feature_path[,N_steps]))),
            ylab="Coefficient", xlab="steps",...)

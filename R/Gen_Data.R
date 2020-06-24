@@ -13,9 +13,9 @@
 #' Simulated data \eqn{(y_i , x_i)} for \eqn{i = 1, . . . , n} are generated as follows:
 #' First, we generate a \eqn{p \times 1} model coefficient vector beta with all entries being zero, except on the positions specified in \code{pos_truecoef},
 #' on which \code{effect_truecoef} is used. When \code{pos_truecoef} is not specified, we randomly choose \code{num_truecoef} positions from the coefficient
-#' vector. When \code{effect_truecoef} is not specified, we randomly set the strength of the true model coefficients following Chen's setting:
-#' \deqn{(4*\frac{\log{N}}{\sqrt{N}}+U(0,1))*Z}
-#' where U is uniform distribution.  and \eqn{P(Z=1)=1/2,P(Z=-1)=1/2}.
+#' vector. When \code{effect_truecoef} is not specified, we randomly set the strength of the true model coefficients as follow:
+#' \deqn{(0.5+U) \cdot Z}
+#' where U is a uniform distribution from 0 to 1,  and Z is a binomial distribution \eqn{P(Z=1)=1/2,P(Z=-1)=1/2}.
 #'
 #' Next, we generate a \eqn{n \times p} feature matrix X based on the choice in
 #' \code{correlation} specified as follows.
@@ -120,7 +120,12 @@ Gen_Data<-function(n=200,p=5000,sigma=1,
       ## No value for num_,pos_ truecoef, num_truecoef =5 for default and pos is randomly sampled from 1:p
 
       num_truecoef<-5; pos_truecoef <- sample(1:p , size = num_truecoef , replace = F)
-    }
+
+      }else{
+
+      num_truecoef = length(pos_truecoef)
+
+      }
   }else{
 
     if (class(num_truecoef != "numeric" | length(num_truecoef) != 1 | num_truecoef%%1 != 0 | num_truecoef < 0)){
@@ -155,13 +160,14 @@ Gen_Data<-function(n=200,p=5000,sigma=1,
       }
   }
 
+
   #effects
 
   if ( is.null(effect_truecoef )){
 
       #effect_truecoef <- runif( num_truecoef , min = -1 , max = 1 )
 
-      effect_truecoef <- (4*log(n)/sqrt(n)+abs(rnorm(num_truecoef))) * sample(c(1,-1),num_truecoef,replace = T)
+      effect_truecoef <- (0.5+abs(rnorm(num_truecoef))) * sample(c(1,-1),num_truecoef,replace = T)
 
   }else{
 
@@ -171,9 +177,9 @@ Gen_Data<-function(n=200,p=5000,sigma=1,
 
     }
 
-    if( any(effect_truecoef< 1) ) {
+    if( any(abs(effect_truecoef)< 1) ) {
 
-      warning("Effects less than 1 may be coverd by noise" )
+      warning("Effects that absolute value less than 1 may be coverd by noise" )
 
     }
 

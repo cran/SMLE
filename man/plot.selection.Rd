@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{Fitted \code{'selection'} object from \code{smle_select}.}
 
-\item{...}{Other graphical parameters to plot.}
+\item{...}{Additional arguments to the plot function.}
 }
 \value{
 No return value, called for side effects.

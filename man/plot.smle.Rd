@@ -25,7 +25,7 @@
 \item{out_plot}{A number from 1 to 5 indicating which plot is to be shown in the separate window; the default for solution path plot is "5".
 See Description for plot labels 1-4.}
 
-\item{...}{Other graphical parameters to plot.}
+\item{...}{Additional arguments to the plot function.}
 }
 \value{
 No return value, called for side effects.

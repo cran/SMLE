@@ -29,7 +29,7 @@
 #' @param x Object of class \code{'smle'} or \code{'sdata'}. Users can also
 #' input a response vector and a feature matrix. See examples
 #'
-#' @param ... Other parameters.
+#'
 #'
 #' @return
 #' Returns a \code{'selection'} object with
@@ -60,12 +60,13 @@ smle_select<-function(x, ...){
 #' @export
 #'
 smle_select.smle<-function(x,...){
-  Data<-structure(list(Y=x$I$Y,X=x$I$CM,family=x$I$family,Cate = x$Cate),class = "sdata")
+
+  Data<-structure(list( Y=x$I$Y, X=x$I$CM, family=x$I$family),class = "sdata")
   S<-smle_select(Data,sub_model =x$ID_Retained,...)
   return(S)
 }
 
-#' Elaborative feature selection with SMLE
+#'
 #' @rdname smle_select
 #'
 #' @method smle_select sdata
@@ -89,7 +90,7 @@ smle_select.smle<-function(x,...){
 #'
 #' @param vote The logical flag for whether to perform the voting procedure.
 #' Only available when \code{tune ='ebic'}.
-#'
+#'fit
 #' @param tune Selection criterion. Default is \code{ebic}.
 #'
 #' @param codingtype Coding types for categorical features; details see SMLE.
@@ -109,13 +110,10 @@ smle_select.smle<-function(x,...){
 #'
 smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
                             gamma_ebic=0.5, vote= FALSE,
-                            tune=c('ebic','aic','bic'), codingtype = NULL,
+                            tune="ebic", codingtype = NULL,
                             gamma_seq=c(seq(0,1,0.2)), vote_threshold=NULL,
                             para = FALSE, num_cores=NULL,...){
   #input check
-
-  tune=match.arg(tune)
-
   X<-x$X
 
   Y<-x$Y
@@ -136,7 +134,9 @@ smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
     X_s<-X
 
     }else{
+
       X_s<-X[,sub_model]
+
       }
 
   if ( is.null(vote_threshold) ){
@@ -177,7 +177,8 @@ smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
 
   #-----------------------------Algorithm-start---------------------------------
 
-  if(x$Cate==TRUE){
+  if( any(  (1:dim(X_s)[2])[sapply(X_s,is.factor)] )){
+    #if sub matrix X_s has any categorical features
 
     criter_value<-ctg_ebicc(Y,X_s,family,tune,codingtype,
                             k_min,k_max,n,pp,gamma_ebic,para,num_cores)
@@ -199,8 +200,8 @@ smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
 
     }
 
-
   }else{
+
 
     criter_value<-ebicc(Y,X_s,family,tune,k_min,k_max,n,pp,gamma_ebic,para,num_cores)
 
@@ -257,10 +258,14 @@ smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
   S<-list(ID_Selected=ID_Selected, family = family,
 
           Coef_Selected=f_s$Coef_Retained,
+          
+          Num_Selected = length(f_s$Coef_Retained),
 
           vote=vote,criterion=tune,
 
-          Criterion_value=criter_value,ID_Voted=ID_Voted,
+          Criterion_value=criter_value,
+
+          ID_Voted=ID_Voted,
 
           gamma_ebic=gamma_ebic,
 
@@ -279,6 +284,9 @@ smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
 #'
 #' When input is \code{'smle'} or \code{'sdata'}, the same
 #' model will be used in the selection.
+#'
+#' @param ... Further arguments passed to or from other methods.
+#'
 #' @export
 #'
 smle_select.default<-function(x, X=NULL, family='gaussian',...){

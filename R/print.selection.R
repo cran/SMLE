@@ -7,7 +7,7 @@
 #'
 #' @param x Fitted \code{'selection'} object.
 #'
-#' @param ... Other parameter to print.
+#' @param ... This argument is not used and listed for method consistency.
 #'
 #' @return
 #' No return value, called for side effects.
@@ -23,11 +23,19 @@
 #' E<-smle_select(fit)
 #' print(E)
 #'
-print.selection<-function( x,... ){
+print.selection<-function( x,...){
 
   if(x$vote != T){
 
-    Description<-data.frame("Selection_criterion" = as.character(x$criterion),
+    Description<-data.frame("Dim_of_Y :" = paste(c(dim(x$Y)[1],1),collapse = ' x '),
+                            
+                            "Dim_of_X :" = paste(dim(x$X),collapse = ' x '),
+                            
+                            "Model_Type :"= .simpleCap(x$family),
+                            
+                            "Retained_model_size :"= as.character(x$Num_Selected),
+      
+                            "Selection_criterion" = as.character(x$criterion),
 
                             "Selected_features" = paste("V",x$ID_Selected,sep='',collapse=' '))
 
@@ -46,5 +54,5 @@ print.selection<-function( x,... ){
   }
 
 
-  message(paste0(capture.output(Description), collapse = "\n"))
+  message(paste0(capture.output(t(Description)), collapse = "\n"))
 }

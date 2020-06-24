@@ -14,8 +14,6 @@ ctg_fit<-function(Y , X , k ,
 
   family<-match.arg(family)
 
-  call<-match.call()
-
   n<-dim(X)[1];p<-dim(X)[2]
 
   #--------------------------------------------------------------#
@@ -33,7 +31,6 @@ ctg_fit<-function(Y , X , k ,
   }
 
   X_dummy<-suppressWarnings(dummy.data.frame(X,sep="_",codingtype = codingtype))
-
 
   #--------------------------------------------------------------#
 
@@ -72,9 +69,8 @@ ctg_fit<-function(Y , X , k ,
 
   pp<-dim(X_iter)[2]
 
-  I<-list(Y=Y,CM=X,CI=Ci,dum_col=dum_col,
-          DM=as.matrix(X_dummy),IM=X_iter,
-          DFI=DFI,DI=DI,Beta0=Beta0,family=family,codingtype=codingtype)
+  I<-list(Y=Y,CM=X,CI=Ci,dum_col=dum_col,IM=X_iter,
+          DFI=DFI,DI=DI,family=family,codingtype=codingtype)
 
 
   #--------------------------------------------------------------#
@@ -121,9 +117,9 @@ ctg_fit<-function(Y , X , k ,
 
   FD<-NULL
 
-  Screening_index<-sub_off(1:p,keyset)+1  # +1 cause intercept won't be screened off.
+  Screening_index<-sub_off(1:p,keyset)
 
-  Screening_Dindex<-sub_off(1:pp,CI2DI(I,keyset))[-1]
+  Screening_Dindex<-sub_off(1:pp,CI2DI(I,keyset))
 
   repeat{
 
@@ -137,13 +133,13 @@ ctg_fit<-function(Y , X , k ,
 
       if(group==T){
 
-          Beta_t<-GroupHard(Beta_t,I,k=k,Screening_index,penalize_mod)
+          Beta_t<-GroupHard(Beta_t,I,k=k-(length(keyset)),Screening_index,penalize_mod)
 
           # length(Beta_t) = pp
 
           }else{
 
-            Beta_t[Screening_Dindex]<- Hard(t=Beta_t[Screening_Dindex], k=k)
+            Beta_t[Screening_Dindex]<- Hard(t=Beta_t[Screening_Dindex], k=k-(length(keyset)))
 
             }
 
@@ -211,6 +207,7 @@ ctg_fit<-function(Y , X , k ,
 
     i<-i+1
   }
+
 
 
   Intercept_value<-coef_None0[1]

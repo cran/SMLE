@@ -35,7 +35,7 @@
 #' method specified in \code{codingtype}. Users can use \code{group} to specify
 #' whether to treat those dummy covariates as a single group feature or as
 #' individual features.
-#' When \code{group=True} with \code{penalize_mod=True}, the effect for a group
+#' When \code{group=TRUE} with \code{penalize_mod=TRUE}, the effect for a group
 #' of \eqn{J} dummy covariates is computed by
 #'
 #' \deqn{ \beta_i = \frac{1}{\sqrt{J}} \cdot \sqrt{(\beta_1)^2+...+(\beta_J)^2}}
@@ -44,7 +44,7 @@
 #'
 #' Since feature screening is usually a preprocessing step, users may wish to
 #' further conduct an elaborative feature selection after screening. This can
-#' be done by setting \code{selection=True} in SMLE or applying any existing
+#' be done by setting \code{selection=TRUE} in SMLE or applying any existing
 #' selection method on the output of \code{SMLE}.
 #'
 #'
@@ -60,8 +60,8 @@
 #' treat covariates having class "factor" as categorical data and extend the data
 #' frame dimension by the dummy columns needed for coding the categorical features.
 #'
-#' @param k Number of features to be retained after screening. Default is
-#' \eqn{\frac{1}{2}\log(n)n^{1/3}}
+#' @param k Total number of features (including 'keyset') to be retained after screening.
+#' Default is \eqn{\frac{1}{2}\log(n)n^{1/3}}.
 #'
 #' @param family Model assumption between Y and X; the default model is Gaussian
 #' linear.
@@ -87,14 +87,14 @@
 #' @param codingtype Coding types for categorical features; default is "DV".
 #' \code{Codingtype = "all"} Convert each level to a 0-1 vector.
 #' \code{Codingtype = "DV"} conducts deviation coding for each level in
-#' comparison with the grant mean.
+#' comparison with the grand mean.
 #' \code{Codingtype = "standard"} conducts standard dummy coding for each level
 #' in comparison with the reference level (first level).
 #'
 #' @param penalize_mod A logical flag to indicate whether adjustment is used in
 #' ranking groups of features. This augment is applicable only when
 #' \code{categorical= TRUE} with \code{group=T}; the default is true:
-#' a factor of \eqn{sqrt{J}} is divided from the \eqn{L_2} effect of a group with J members.
+#' a factor of \eqn{\sqrt{J}} is divided from the \eqn{L_2} effect of a group with J members.
 #'
 #' @param standardize Logical flag for feature standardization, prior to
 #' performing (iterative) feature screening.  The resulting coefficients are
@@ -111,25 +111,26 @@
 #'
 #' @param tol A tolerance level to stop the iteration, when the squared sum of
 #' differences between two successive coefficient updates is below it.
-#' Default is \eqn{10^{-3}}. Set \code{tol= NULL} to loosen this stopping criterion.
+#' Default is \eqn{10^{-2}}. Set \code{tol= NULL} to loosen this stopping criterion.
 #'
 #' @param selection A logical flag to indicate whether an elaborate selection
-#' is to be conducted by \code{smle_select} after screening. Default is FALSE.
+#' is to be conducted by \code{smle_select} after screening (Using default arguments). Default is FALSE.
 #'
-#' @param ... Other parameters for \code{smle_select}
 #'
 #' @references
+#' UCLA Statistical Consulting Group. \emph{coding systems for categorical
+#' variables in regression analysis}. \url{https://stats.idre.ucla.edu/spss
+#' /faq/coding-systems-for-categorical-variables-in-regression-analysis-2/}.
+#' Retrieved May 28, 2020.
+#'
 #' Xu, C. and Chen, J. (2014). The Sparse MLE for Ultrahigh-Dimensional Feature
-#' Screening, \emph{Journal of the American Statistical Association}
-#' UCLA: Statistical Consulting Group. \emph{CODING SYSTEMS FOR CATEGORICAL VARIABLES IN REGRESSION ANALYSIS}
-#' \url{https://stats.idre.ucla.edu/spss/faq/coding-systems-for-categorical-variables-in-regression-analysis-2/}
+#' Screening, \emph{Journal of the American Statistical Association}.
+#'
+#'
 #'
 #'
 #'
 #' @return
-#'
-#'
-#'
 #' Returns a '\code{smle}' object with
 #' \item{I}{A list of iteration information.
 #'
@@ -193,9 +194,9 @@
 SMLE<-function(Y , X , k=NULL , family=c("gaussian","binomial","poisson"),
                categorical = NULL , keyset = NULL, intercept = TRUE ,
                group = TRUE , codingtype = NULL ,
-               maxit = 50 , tol = 10^(-4) , selection = F ,
-               standardize = FALSE , fast = FALSE , U_rate=0.5 ,
-               penalize_mod = TRUE , ...){
+               maxit = 50 , tol = 10^(-2) , selection = F ,
+               standardize = TRUE , fast = FALSE , U_rate=0.5 ,
+               penalize_mod = TRUE ){
 
   #-------Input preprocess-------
 
@@ -213,10 +214,11 @@ SMLE<-function(Y , X , k=NULL , family=c("gaussian","binomial","poisson"),
       categorical = TRUE
     }else{
         categorical= FALSE
+        X<- as.matrix(X, ncol=dim(X)[2])
         }
     }
 
-  if(standardize== TRUE){X<-Standardize(X)}
+
   #------------------------------
   if(sum(is.na(c(Y,X)))==TRUE){stop("NA in X or Y")}
 
@@ -233,13 +235,16 @@ SMLE<-function(Y , X , k=NULL , family=c("gaussian","binomial","poisson"),
 
     if(!codingtype%in% c("all","standard","DV")){stop("Codingtype only in all,standard,DV")}
 
-    fit<- ctg_fit(Y,X,k,family,categorical,keyset,maxit,tol,intercept,group,codingtype,penalize_mod,call)
+    fit<- ctg_fit(Y,X,k,family,categorical,keyset,maxit,tol,
+                  intercept,group,codingtype,penalize_mod,call,U_rate)
 
     return(fit)
 
   }
   else{
 
+
+    if(standardize== TRUE){X<-Standardize(X)}
     fit<-GPBnet(Y,X,k,family,keyset,intercept,maxit,tol,fast,U_rate)
 
   }
@@ -257,8 +262,6 @@ SMLE<-function(Y , X , k=NULL , family=c("gaussian","binomial","poisson"),
 
     }else{
 
-  return(selection(fit,...)
-
-         )
+  return(smle_select(fit))
   }
 }

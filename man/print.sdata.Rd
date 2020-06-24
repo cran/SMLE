@@ -7,10 +7,9 @@
 \method{print}{sdata}(x, ...)
 }
 \arguments{
-\item{x}{\code{"sdata"} object from Gen_Data function
-.}
+\item{x}{\code{"sdata"} object from Gen_Data function.}
 
-\item{...}{Other parameter for print function.}
+\item{...}{This argument is not used and listed for method consistency.}
 }
 \value{
 No return value, called for side effects.

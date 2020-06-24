@@ -1,6 +1,6 @@
 Package: SMLE
 Title: Joint Feature Screening via Sparse MLE
-Version: 0.4.0
+Version: 0.4.1
 Author: Qianxiang Zang,Chen Xu,Kelly Burkett
 Maintainer: Qianxiang Zang <qzang023@uottawa.ca>
 Imports: foreach, mvnfast, doParallel
@@ -12,5 +12,5 @@ LazyData: true
 RoxygenNote: 7.1.0
 NeedsCompilation: no
 Repository: CRAN
-Packaged: 2020-06-07 23:21:08 UTC; Gamer PC
-Date/Publication: 2020-06-08 04:20:02 UTC
+Packaged: 2020-06-24 13:41:46 UTC; Gamer PC
+Date/Publication: 2020-06-24 14:30:08 UTC

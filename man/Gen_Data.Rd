@@ -66,9 +66,9 @@ It permits both numerical and categorical features, whose quantity can be larger
 Simulated data \eqn{(y_i , x_i)} for \eqn{i = 1, . . . , n} are generated as follows:
 First, we generate a \eqn{p \times 1} model coefficient vector beta with all entries being zero, except on the positions specified in \code{pos_truecoef},
 on which \code{effect_truecoef} is used. When \code{pos_truecoef} is not specified, we randomly choose \code{num_truecoef} positions from the coefficient
-vector. When \code{effect_truecoef} is not specified, we randomly set the strength of the true model coefficients following Chen's setting:
-\deqn{(4*\frac{\log{N}}{\sqrt{N}}+U(0,1))*Z}
-where U is uniform distribution.  and \eqn{P(Z=1)=1/2,P(Z=-1)=1/2}.
+vector. When \code{effect_truecoef} is not specified, we randomly set the strength of the true model coefficients as follow:
+\deqn{(0.5+U) \cdot Z}
+where U is a uniform distribution from 0 to 1,  and Z is a binomial distribution \eqn{P(Z=1)=1/2,P(Z=-1)=1/2}.
 
 Next, we generate a \eqn{n \times p} feature matrix X based on the choice in
 \code{correlation} specified as follows.

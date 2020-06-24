@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{Fitted \code{'selection'} object.}
 
-\item{...}{Other parameter to print.}
+\item{...}{This argument is not used and listed for method consistency.}
 }
 \value{
 No return value, called for side effects.

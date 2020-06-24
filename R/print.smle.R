@@ -5,16 +5,19 @@
 #' and the related convergence information.
 #'
 #' @param x Fitted '\code{smle}' object.
-#' @param ... Other parameter for print.
+#'
+#' @param ... This argument is not used and listed for method consistency.
+#'
 #' @return
 #' No return value, called for side effects.
 #' @export
-#' @method print smle
+
 #' @examples
 #' Data<-Gen_Data(correlation="MA",family = "gaussian")
 #' fit<-SMLE(Data$Y,Data$X,k=20,family = "gaussian")
 #' print(fit)
-print.smle=function(x,...){
+#'
+print.smle=function(x , ...){
 
   cat("\nCall: ", deparse(x$call), "\n\n")
 

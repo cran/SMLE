@@ -9,8 +9,9 @@ ebicc<-function(Y,X_s,family,tune,k_min,k_max,
 
     ff<- SMLE(Y=Y, X=X_s, k=v, family=family,fast=TRUE)
 
-    return(lh(Y=Y, X=X_s[,ff$ID_Retained],
-              beta=as.vector(glm(Y ~ X_s[,ff$ID_Retained]-1, family=family)$coefficients),
+
+    return(lh(Y=Y, X=as.matrix(X_s[,ff$ID_Retained]),
+              beta=as.vector(glm(Y ~ as.matrix(X_s[,ff$ID_Retained])-1, family=family)$coefficients),
               family=family))
   }
 
@@ -31,44 +32,52 @@ ctg_ebicc<-function(Y,X_s,family,tune,codingtype,
 
   #fast_smle_by_sparisty function
 
-
-
-  #return retained feature ids for given sparisity
+  #X_s contains categorical features.
 
   fss<-function(v,codingtype){
 
     ff<- SMLE(Y=Y, X=X_s, k=v, family=family,codingtype = codingtype)
 
-    X_sub <- X_s[,ff$ID_Retained]
+    X_v <- X_s[,ff$ID_Retained]
 
-    X_dummy <- suppressWarnings(dummy.data.frame(X_sub ,sep="_",codingtype = codingtype))
+    Ci <- sapply(X_v,is.factor)
 
-    Ci <- sapply(X_sub,is.factor)
+    if( any(sapply(X_v,is.factor)) ){
+      # if X_v contains categorical  features
 
-    if(codingtype =="all"){
+      X_dummy <- as.matrix(suppressWarnings(dummy.data.frame(X_v ,sep="_",codingtype = codingtype)))
 
-      dummy_f <- sum(sapply(X_sub[,Ci],nlevels)-1)
+      if(codingtype =="all"){
+
+        dummy_f <- sum(sapply(list(X_v[,Ci]),nlevels)-1)
+
+      }else{
+
+        dummy_f <- sum(sapply(list(X_v[,Ci]),nlevels)-2)
+
+      }
+
+      ll <- lh(Y=Y, X=X_dummy,   beta=as.vector(glm(Y ~ X_dummy-1, family=family)$coefficients), family=family)
+      return(list(d_f= dummy_f + v, likelihood = ll))
 
     }else{
+      #X_v is a matrix
+      X_v =  as.matrix(X_v)
 
-      dummy_f <- sum(sapply(X_sub[,Ci],nlevels)-2)
+      ll <- lh(Y=Y, X=X_v,
+                beta=as.vector(glm(Y ~ X_v-1, family=family)$coefficients),
+                family=family)
+
+      return(list(d_f= v, likelihood = ll))
 
     }
-
-    ll <- lh(Y=Y, X=as.matrix(X_dummy, ncol= dim(X_dummy)[2]),
-             beta=as.vector(glm(Y ~ as.matrix(X_dummy,ncol=dim(X_dummy)[2])-1, family=family)$coefficients),
-             family=family)
-    message(ll)
-    return(list(d_f= dummy_f, likelihood = ll))
-
   }
 
   select<-lapply(k_min:k_max,fss,codingtype=codingtype)
-
   select_crit<-switch(tune,
-                      'ebic'=function(select,v){return(-2 *  select[[v]][[1]]  +   select[[v]][[2]]* log(n) + 2 *  select[[v]][[2]] * gamma * log(pp))},
-                      'bic' =function(select,v){return(-2 *  select[[v]][[1]]  +   select[[v]][[2]]* log(n))},
-                      'aic' =function(select,v){return(-2 *  select[[v]][[1]]  +   select[[v]][[2]]*2)}
+                      'ebic'=function(select,v){return(-2 *  select[[v]][[2]]  +   select[[v]][[1]]* log(n) + 2 *  select[[1]][[2]] * gamma * log(pp))},
+                      'bic' =function(select,v){return(-2 *  select[[v]][[2]]  +   select[[v]][[1]]* log(n))},
+                      'aic' =function(select,v){return(-2 *  select[[v]][[2]]  +   select[[v]][[1]]*2)}
   )
 
 

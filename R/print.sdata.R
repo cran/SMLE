@@ -7,9 +7,9 @@
 #' coefficients, and the correlation structure.
 #'
 #'
-#' @param x \code{"sdata"} object from Gen_Data function
-#' .
-#' @param ... Other parameter for print function.
+#' @param x \code{"sdata"} object from Gen_Data function.
+#'
+#' @param ... This argument is not used and listed for method consistency.
 #'
 #' @return
 #'

@@ -81,8 +81,6 @@ dummy <- function( x, data=NULL, sep="_", drop=TRUE, fun=as.integer, verbose = F
 
   colnames.MM <- colnames(mm)[-1]
 
-  message( " ", name, ":", ncol(mm)-1, "dummy varibles created\n" )
-
   MM <- matrix( MM, nrow=nrow(mm), dimnames=list(NULL, colnames.MM) )
 
   # Replace the column names 'x'... with the true variable name and a seperator

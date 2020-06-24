@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{Fitted '\code{smle}' object.}
 
-\item{...}{Other parameter for print.}
+\item{...}{This argument is not used and listed for method consistency.}
 }
 \value{
 No return value, called for side effects.
@@ -23,4 +23,5 @@ and the related convergence information.
 Data<-Gen_Data(correlation="MA",family = "gaussian")
 fit<-SMLE(Data$Y,Data$X,k=20,family = "gaussian")
 print(fit)
+
 }

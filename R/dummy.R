@@ -92,11 +92,9 @@ dummy <- function( x, data=NULL, sep="_", drop=TRUE, fun=as.integer, verbose = F
 }
 
 
-dummy.data.frame <- function( data,codingtype=c("standard","all","DV"), omit.constants = TRUE,
-
-
+dummy.data.frame <- function( data,codingtype, 
                               dummy.classes=getOption("dummy.classes"), all=TRUE, ... ) {
-  codingtype<-match.arg(codingtype)
+
 
   # Initialize the data.frame
   df<-data.frame( row.names=row.names(data) )
@@ -113,9 +111,6 @@ dummy.data.frame <- function( data,codingtype=c("standard","all","DV"), omit.con
 
       # OMIT CONSTANT COLUMNS:
       #  Variables that are constant will return a matrix with one column
-      if( ncol(dummies) == 1  & omit.constants ) {
-        dummies <- matrix( nrow=nrow(data), ncol=0 )
-      }
 
       if( ncol(dummies)>0 ) new.attr[[nm]] <- (ncol(df)+1):( ncol(df)+ncol(dummies) )
 

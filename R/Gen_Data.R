@@ -7,7 +7,7 @@
 #'
 #'
 #' @import mvnfast mvnfast
-#'
+#' @import matrixcalc
 #' @details
 #'
 #' Simulated data \eqn{(y_i , x_i)} for \eqn{i = 1, . . . , n} are generated as follows:
@@ -27,8 +27,8 @@
 #'
 #' cov\eqn{(x_j, x_{j-1}) = \rho}, cov\eqn{(x_j, x_{j-2}) = \frac{\rho}{2}} and cov\eqn{(x_j, x_h) = 0} for \eqn{|j-h| \geq 3}.
 #'
-#' Compound symmetry (CS): candidate features \eqn{x_1,..., x_p} are joint normal, marginally \eqn{N( 0, 1)}, with cov\eqn{(x_j, x_h) =  \rho} if \eqn{j} ,\eqn{h}
-#' are both in the set of important features and \eqn{cov(x_j, x_h) = \frac{\rho}{2}} when only
+#' Compound symmetry (CS): candidate features \eqn{x_1,..., x_p} are joint normal, marginally \eqn{N( 0, 1)}, with cov\eqn{(x_j, x_h) =\frac{\rho}{2}} if \eqn{j} ,\eqn{h}
+#' are both in the set of important features and \eqn{cov(x_j, x_h) =  \rho } when only
 #' one of \eqn{j} or \eqn{h} are iOn the set of important features.
 #'
 #' Auto-regressive (AR): candidate features \eqn{x_1,..., x_p} are joint normal marginally \eqn{N( 0, 1)}, with
@@ -50,7 +50,7 @@
 #'
 #' @param level_ctgidx  A vector to indicate the levels of categorical features in 'pos_ctgidx'. Default is 2.
 #'
-#' @param effect_truecoef  Effects for the relevant features in 'pos_truecoef'.
+#' @param effect_truecoef  Effects for the relevant features in 'pos_truecoef'. See details.
 #'
 #' @param pos_ctgidx Vector of indices denoting which columns are categorical.
 #'
@@ -61,7 +61,7 @@
 #' \code{'binomial'} for binary (0-1).
 #'
 #' @param correlation Correlation structure among features. \code{correlation = 'ID'} for independent,
-#' \code{correlation = 'MA'} for moving average, \code{correlation = 'CS'} for compound symmetry, \code{correlation = 'AR'} for auto regressive Default is "ID".For more information see details.
+#' \code{correlation = 'MA'} for moving average, \code{correlation = 'CS'} for compound symmetry, \code{correlation = 'AR'} for auto regressive Default is \code{'ID'}.For more information see details.
 #'
 #' @param rho Parameter controlling the correlation strength. See details.
 #'
@@ -71,10 +71,9 @@
 #'
 #'
 #' @references
-#' Chen Xu and Jiahua Chen. (2014),
-#' The Sparse MLE for Ultrahigh-Dimensional Feature Screening
-#' * Journal of the American Statistical Association*109:507,
-#' pages:1257-1269
+#' Xu, C. and Chen, J. (2014). The Sparse MLE for Ultrahigh-Dimensional Feature
+#' Screening, \emph{Journal of the American Statistical Association}, \bold{109}(507), 1257–1269
+#'
 #'
 #'
 #'
@@ -93,7 +92,7 @@
 #'
 #' @examples
 #' #Simulating data with binomial response and independent strcture.
-#' Data<-Gen_Data(family ="binomial",correlation = "ID")
+#' Data<-Gen_Data(n =100, p = 1000,family ="binomial",correlation = "AR")
 #' cor(Data$X[,1:5])
 #' print(Data)
 #'
@@ -110,8 +109,9 @@ Gen_Data<-function(n=200,p=5000,sigma=1,
   ##-----------------------------------------------------Argument Check and Initialize Parameters--------------------------------------------------------
   correlation=match.arg(correlation)
   family=match.arg(family)
-
-
+  cl<-match.call()
+  cl[[1]] <- as.name("Gen_Data")
+  
   #Argument check for coefficients
   if (is.null(num_truecoef) ) {
 
@@ -128,7 +128,7 @@ Gen_Data<-function(n=200,p=5000,sigma=1,
       }
   }else{
 
-    if (class(num_truecoef != "numeric" | length(num_truecoef) != 1 | num_truecoef%%1 != 0 | num_truecoef < 0)){
+    if (class(num_truecoef) != "numeric"| length(num_truecoef) != 1 | num_truecoef%%1 != 0 | num_truecoef < 0){
 
       stop("The number of features affect the response variable should be an postive integer.")
 
@@ -177,19 +177,13 @@ Gen_Data<-function(n=200,p=5000,sigma=1,
 
     }
 
-    if( any(abs(effect_truecoef)< 1) ) {
-
-      warning("Effects that absolute value less than 1 may be coverd by noise" )
-
-    }
-
   }
 
   ##------------------------------------------Create Data-----------------------------------------------
 
   #Numerical data
 
-  D<-Numeric_Gen(n, p, pos_truecoef, effect_truecoef, correlation, rho, family, sigma )
+  D<-Numeric_Gen(n, p, pos_truecoef, effect_truecoef, correlation, rho, family, sigma,cl )
 
   # Numerical data and Categorical parameter check
 
@@ -292,9 +286,9 @@ Gen_Data<-function(n=200,p=5000,sigma=1,
 
     colnames(Z)<-cn
 
-    D<-list(Y = D$Y,X = Z , index = pos_truecoef, Beta= effect_truecoef,
+    D<-list(call = cl, Y = D$Y,X = Z , subset_true = pos_truecoef, coef_true= effect_truecoef,
 
-            family = family, Cate = TRUE, correlation = correlation)
+            family = family, Ctg = TRUE, correlation = correlation)
 
     class(D) <- "sdata"
 
@@ -338,24 +332,24 @@ Gen_Data<-function(n=200,p=5000,sigma=1,
 
       }
 
-      return(mvnfast::rmvn(n = N, mu = rep(0,P), ar1_cor(P,rho),ncores = parallel::detectCores()))
+      return(mvnfast::rmvn(n = N, mu = rep(0,P), ar1_cor(P,rho)))
 
     }else{
 
-      CC<-matrix(rho/2, ncol=P, nrow=P)
+      CC<-matrix(rho, ncol=P, nrow=P)
 
-      CC[pos_truecoef, pos_truecoef]<- rho
+      CC[pos_truecoef, pos_truecoef]<- rho/2
 
       diag(x=CC)<-1
-
-      return(mvnfast::rmvn(n = N, mu = rep(0,P), CC ,ncores =parallel::detectCores()))
+      if(!is.positive.definite(CC)){ stop("The Given Correlation matrix is not positive difinite") }
+      return(mvnfast::rmvn(n = N, mu = rep(0,P), CC))
 
     }
 
   }
 
 
-  Numeric_Gen<-function(n , p , pos_truecoef , effect_truecoef, correlation, rho, family, sigma ){
+  Numeric_Gen<-function(n , p , pos_truecoef , effect_truecoef, correlation, rho, family, sigma, cl ){
 
     numeric_data<-Gen_DesignMatrix(correlation,n,p,pos_truecoef=pos_truecoef,rho)
 
@@ -388,12 +382,12 @@ Gen_Data<-function(n=200,p=5000,sigma=1,
 
                        'MA'='moving average',
 
-                       "AR"="auto correlation",
+                       "AR"="auto regressive",
 
                        'CS'='compound symmetry')
 
-    D<-list(Y = Y,X = numeric_data , index = pos_truecoef, Beta= effect_truecoef,
-            family = family, Cate = FALSE, correlation = correlation)
+    D<-list(call = cl, Y = Y,X = numeric_data , subset_true = pos_truecoef, coef_true= effect_truecoef,
+            family = family, Ctg = FALSE, correlation = correlation)
 
     class(D)<-"sdata"
 

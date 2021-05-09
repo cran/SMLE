@@ -36,10 +36,10 @@ Gen_Data(
 
 \item{level_ctgidx}{A vector to indicate the levels of categorical features in 'pos_ctgidx'. Default is 2.}
 
-\item{effect_truecoef}{Effects for the relevant features in 'pos_truecoef'.}
+\item{effect_truecoef}{Effects for the relevant features in 'pos_truecoef'. See details.}
 
 \item{correlation}{Correlation structure among features. \code{correlation = 'ID'} for independent,
-\code{correlation = 'MA'} for moving average, \code{correlation = 'CS'} for compound symmetry, \code{correlation = 'AR'} for auto regressive Default is "ID".For more information see details.}
+\code{correlation = 'MA'} for moving average, \code{correlation = 'CS'} for compound symmetry, \code{correlation = 'AR'} for auto regressive Default is \code{'ID'}.For more information see details.}
 
 \item{rho}{Parameter controlling the correlation strength. See details.}
 
@@ -80,8 +80,8 @@ marginally \eqn{N( 0, 1)}, with
 
 cov\eqn{(x_j, x_{j-1}) = \rho}, cov\eqn{(x_j, x_{j-2}) = \frac{\rho}{2}} and cov\eqn{(x_j, x_h) = 0} for \eqn{|j-h| \geq 3}.
 
-Compound symmetry (CS): candidate features \eqn{x_1,..., x_p} are joint normal, marginally \eqn{N( 0, 1)}, with cov\eqn{(x_j, x_h) =  \rho} if \eqn{j} ,\eqn{h}
-are both in the set of important features and \eqn{cov(x_j, x_h) = \frac{\rho}{2}} when only
+Compound symmetry (CS): candidate features \eqn{x_1,..., x_p} are joint normal, marginally \eqn{N( 0, 1)}, with cov\eqn{(x_j, x_h) =\frac{\rho}{2}} if \eqn{j} ,\eqn{h}
+are both in the set of important features and \eqn{cov(x_j, x_h) =  \rho } when only
 one of \eqn{j} or \eqn{h} are iOn the set of important features.
 
 Auto-regressive (AR): candidate features \eqn{x_1,..., x_p} are joint normal marginally \eqn{N( 0, 1)}, with
@@ -95,15 +95,13 @@ For more details (see reference below)
 }
 \examples{
 #Simulating data with binomial response and independent strcture.
-Data<-Gen_Data(family ="binomial",correlation = "ID")
+Data<-Gen_Data(n =100, p = 1000,family ="binomial",correlation = "AR")
 cor(Data$X[,1:5])
 print(Data)
 
 
 }
 \references{
-Chen Xu and Jiahua Chen. (2014),
-The Sparse MLE for Ultrahigh-Dimensional Feature Screening
-* Journal of the American Statistical Association*109:507,
-pages:1257-1269
+Xu, C. and Chen, J. (2014). The Sparse MLE for Ultrahigh-Dimensional Feature
+Screening, \emph{Journal of the American Statistical Association}, \bold{109}(507), 1257–1269
 }

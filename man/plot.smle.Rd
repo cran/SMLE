@@ -4,37 +4,29 @@
 \alias{plot.smle}
 \title{Plots to visualize the SMLE screening step}
 \usage{
-\method{plot}{smle}(
-  x,
-  Display = c("top_row", "all"),
-  num_path = NULL,
-  which_path = NULL,
-  out_plot = 5,
-  ...
-)
+\method{plot}{smle}(x, num_path = NULL, which_path = NULL, out_plot = 5, ...)
 }
 \arguments{
 \item{x}{Fitted  \code{"smle"} object from SMLE.}
 
-\item{Display}{For the solution path plot, show path for the most significant coefficients(\code{top_row}) or for all coefficients(\code{all}).}
+\item{num_path}{Number of top coefficients to be shown in solution path plot.
+Default in solution path plot is equal to the number of features retained in the model.}
 
-\item{num_path}{Number of top coefficients to be shown in solution path plot if \code{type = "top_row"}. Default in solution path plot is 5.}
-
-\item{which_path}{A vector to control which features are shown in addition to the paths for the most significant coefficients if \code{type ="top_row"}.}
+\item{which_path}{A vector to control which features are shown in addition to the paths for the most significant coefficients.}
 
 \item{out_plot}{A number from 1 to 5 indicating which plot is to be shown in the separate window; the default for solution path plot is "5".
 See Description for plot labels 1-4.}
 
-\item{...}{Additional arguments to the plot function.}
+\item{...}{Additional arguments to the second plot.}
 }
 \value{
-No return value, called for side effects.
+The function returns a vector of the predicted or fitted response values depending on the specified arguments.
 }
 \description{
 This function returns two plot windows. By default, the first contains 4 plots to assess:
 1) log-likelihood,  2) Euclidean distance between the current
 and the previous coefficient estimates,   3)  the number of tries in tuning parameter "u" in IHT
-algorithm (see "Ucheck" in SMLE),  and 4) the number of features changed in the current active set.
+algorithm (see details of \code{SMLE()}),  and 4) the number of features changed in the current active set.
 By default, the second plot shows the solution path (estimated coefficient by iteration step) for selected features.
 }
 \examples{

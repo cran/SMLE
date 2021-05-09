@@ -24,8 +24,8 @@ Uh<-function(A, uh, b0, b1, family="gaussian")
       bt<- as.matrix(bt, ncol=1)
     }
 
-    tm1 <-  sum(bt^2) / uh
-    tm2 <-  sum(tcrossprod(A[,in_b],t(bt))^2 ) * rho
+    tm1 <-  crossprod(bt) / uh
+    tm2 <-  crossprod(A[,in_b]%*%bt) * rho
 
     Bt <- exp(tm1 - tm2)
   }
@@ -68,19 +68,7 @@ Uh<-function(A, uh, b0, b1, family="gaussian")
   return(Bt)
 }
 
-#####Preprocessing Data
-PrePro<-function(X,standardize){
-  if(is.na(X)==T){
-    na_index<-(1:dim(X)[2])[apply(X,2,is.na)]
-    X<-X[,-na_index]
-  }
-  if(standardize == T){
-    X<-Standardize(X)
-  }
-  return(as.matrix(X))
-}
-
-####likelihood function with known sigma
+####likelihood function
 lh<-function(Y, X, beta, family=c("gaussian","binomial","poisson"))
 {
   X<-as.matrix(X)
@@ -101,7 +89,7 @@ lh<-function(Y, X, beta, family=c("gaussian","binomial","poisson"))
 
   return(ll<-switch(family,
             "gaussian"=-n/2*log(sig),
-            "binomial"=sum( (Y*R_0 -  log(1 + exp(R_0))/sig^2 )),
+            "binomial"=sum( (Y*R_0 -  log(1 + exp(R_0)))),
             "poisson" =sum( dpois(Y, exp(R_0), log = TRUE))
             )
   )
@@ -202,7 +190,7 @@ GroupHard<-function(Beta_t,I,k,Screening_index,penalize_mod){
 Group_Beta<-function(Beta_t,I,penalize_mod){
 
   num<-as.vector(Beta_t)
-
+  
   num<-num[-unlist(I$DFI)]
 
   Intercept_value = num[1]

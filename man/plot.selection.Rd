@@ -7,12 +7,12 @@
 \method{plot}{selection}(x, ...)
 }
 \arguments{
-\item{x}{Fitted \code{'selection'} object from \code{smle_select}.}
+\item{x}{Fitted \code{'selection'} object from \code{smle_select()}.}
 
 \item{...}{Additional arguments to the plot function.}
 }
 \value{
-No return value, called for side effects.
+No return value.
 }
 \description{
 This function constructs a sparsity vs. selection criterion curve for a selection object.

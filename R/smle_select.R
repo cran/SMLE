@@ -12,8 +12,8 @@
 #'
 #' @details
 #' This functions accepts three types of input for GLMdata;
-#' 1. \code{'smle'} object, as the output from SMLE;
-#' 2. \code{'sdata'} object, as the output from Gen_Data;
+#' 1. \code{'smle'} object, as the output from \code{SMLE()};
+#' 2. \code{'sdata'} object, as the output from \code{Gen_Data()};
 #' 3. Other response and feature matrix input by users.
 #'
 #' Note that this function is mainly design to conduct an elaborative selection
@@ -21,8 +21,8 @@
 #' ultra-high-dimensional data without screening.
 #' @references
 #'
-#' Chen. J. and Chen. Z. (2012). "Extended BIC for small-n-large-P sparse GLM."
-#' \emph{Statistica Sinica}: 555-574.
+#' Chen. J. and Chen. Z. (2012). "Extended BIC for small-n-large-p sparse GLM."
+#' \emph{Statistica Sinica}, \bold{22}(2), 555-574.
 #'
 #' @importFrom parallel detectCores mclapply
 #'
@@ -36,6 +36,7 @@
 #' \item{ID_Selected}{A list of selected features.}
 #' \item{Coef_Selected}{Fitted model coefficients based on the selected
 #' features.}
+#' \item{Intercept}{Fitted model intercept based on the selected features.}
 #' \item{Criterion_value}{Values of selection criterion for the candidate models
 #' with various sparsity.}
 #' \item{ID_Voted}{A list of Voting selection results; item returned only when
@@ -71,10 +72,6 @@ smle_select.smle<-function(x,...){
 #'
 #' @method smle_select sdata
 #'
-#' @import doParallel foreach
-#'
-#' @importFrom foreach foreach
-#'
 #' @importFrom parallel makeCluster stopCluster
 #'
 #' @param k_min The lower bound of candidate model sparsity. Default is 1.
@@ -91,7 +88,7 @@ smle_select.smle<-function(x,...){
 #' @param vote The logical flag for whether to perform the voting procedure.
 #' Only available when \code{tune ='ebic'}.
 #'fit
-#' @param tune Selection criterion. Default is \code{ebic}.
+#' @param tune Selection criterion.One of \code{'ebic'},\code{'bic'},\code{'aic'}. Default is \code{'ebic'}.
 #'
 #' @param codingtype Coding types for categorical features; details see SMLE.
 #'
@@ -103,16 +100,16 @@ smle_select.smle<-function(x,...){
 #' @param para Logical flag to use parallel computing to do voting selection.
 #' Default is FALSE. See Details.
 #'
-#' @param num_cores The number of cores to use. The default will be all cores
+#' @param num_clusters The number of clusters to use. The default will be 2 times cores
 #' detected.
 #'
 #' @export
 #'
-smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
+smle_select.sdata<-function(x, k_min=1, k_max=NULL, sub_model=NULL,
                             gamma_ebic=0.5, vote= FALSE,
                             tune="ebic", codingtype = NULL,
                             gamma_seq=c(seq(0,1,0.2)), vote_threshold=NULL,
-                            para = FALSE, num_cores=NULL,...){
+                            para = FALSE, num_clusters=NULL,...){
   #input check
   X<-x$X
 
@@ -123,6 +120,7 @@ smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
   n<-dim(X)[1]
 
   pp<- dim(X)[2]
+  
 
   #check input data dimension, warning for High dimensional input.
   if(is.null(sub_model)){
@@ -137,31 +135,24 @@ smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
 
       X_s<-X[,sub_model]
 
+
       }
 
+  k_max=dim(X_s)[2]
+  
   if ( is.null(vote_threshold) ){
 
-    vote_threshold=(k_min+k_max)/2
+    vote_threshold=0.8
 
+  }
+  if(para==TRUE && is.null(num_clusters)){ 
+    
+    num_cores    <- parallel::detectCores() 
+    num_clusters <- 2 * num_cores
     }
 
   IP<-NULL;ID_Voted<-NULL;vs<-NULL
 
-  if(para==TRUE){
-
-    if(is.null(num_cores)){
-
-      num_cores<-parallel::detectCores()
-    }
-
-    if(.Platform$OS.type == "windows"){message("We are using windows
-                                               multi-cores computing with",
-                                               num_cores,"cores. \n")}
-
-    if(.Platform$OS.type == "unix"){message("We are using unix multi-cores
-                                            computing with", num_cores,"cores.
-                                            \n")}
-  }
   if(k_min<0 || k_max<k_min ||k_min%%1!=0 ||k_max%%1 !=0||k_max>pp){
 
     stop("Retained model size setting error(k_min and k_max).")
@@ -176,34 +167,36 @@ smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
                                                     all,standard,DV")}
 
   #-----------------------------Algorithm-start---------------------------------
-
+  ctg =FALSE
+  
   if( any(  (1:dim(X_s)[2])[sapply(X_s,is.factor)] )){
     #if sub matrix X_s has any categorical features
-
+    ctg= TRUE
+    
     criter_value<-ctg_ebicc(Y,X_s,family,tune,codingtype,
-                            k_min,k_max,n,pp,gamma_ebic,para,num_cores)
+                            k_min,k_max,n,pp,gamma_ebic,para,num_clusters)
 
     v_s <- which.min(criter_value)+k_min-1
 
-    f_s<- SMLE(Y=Y, X=X_s, k=v_s, family=family)
+    f_s<- SMLE(Y=Y, X=X_s, k=v_s, family=family,categorical = T)
 
     #Feature selection by ebic voting.
 
     ebic_selection_by_gamma<-function(gamma){
 
       ebic_value<-ctg_ebicc(Y,X_s,family,tune,codingtype,
-                            k_min,k_max,n,pp,gamma,para,num_cores)
+                            k_min,k_max,n,pp,gamma,para,num_clusters)
 
       v_s <- which.min(ebic_value)+k_min-1
 
-      return(SMLE(Y=Y, X=X_s, k=v_s, family=family)$ID_Retained)
+      return(SMLE(Y=Y, X=X_s, k=v_s, family=family,categorical = T)$ID_Retained)
 
     }
 
   }else{
 
 
-    criter_value<-ebicc(Y,X_s,family,tune,k_min,k_max,n,pp,gamma_ebic,para,num_cores)
+    criter_value<-ebicc(Y,X_s,family,tune,k_min,k_max,n,pp,gamma_ebic,para,num_clusters)
 
     v_s <- which.min(criter_value)+k_min-1
 
@@ -212,8 +205,9 @@ smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
     #Feature selection by ebic voting.
 
     ebic_selection_by_gamma<-function(gamma){
+      library(SMLE)
 
-      ebic_value<-ebicc(Y,X_s,family,tune,k_min,k_max,n,pp,gamma,para,num_cores)
+      ebic_value<-ebicc(Y,X_s,family,tune,k_min,k_max,n,pp,gamma,para,num_clusters)
 
       v_s <- which.min(ebic_value)+k_min-1
 
@@ -231,16 +225,24 @@ smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
     vs<-c()
 
     if(para==TRUE){
-
-        vs<-unlist(mclapply(gamma_seq,ebic_selection_by_gamma))
-
-    }else{
+      if(.Platform$OS.type=="windows"){
+        
+        cl<-parallel::makeCluster(num_clusters)
+        
+      }
+      
+        vs<-unlist(mclapply(gamma_seq,ebic_selection_by_gamma,mc.cores = 2*num_clusters))
+        
+        }else{
       vs<-unlist(lapply(gamma_seq,ebic_selection_by_gamma))
 
       }
     IP<-as.factor(vs)
-
-    ID_Voted<-as.numeric(names(summary(IP)[order(summary(IP),decreasing= T)[1:min(length(summary(IP)),vote_threshold)]]))
+    
+    IP_f<-summary(IP)[order(summary(IP),decreasing= T)]/max(summary(IP))
+    
+    ID_Voted<-as.numeric(names(IP_f[IP_f>=vote_threshold]))
+    #ID_Voted<-as.numeric(names(summary(IP)[order(summary(IP),decreasing= T)[1:min(length(summary(IP)),vote_threshold)]]))
 
     }
   if(is.null(sub_model)){
@@ -259,15 +261,25 @@ smle_select.sdata<-function(x, k_min=1, k_max=10, sub_model=NULL,
 
           Coef_Selected=f_s$Coef_Retained,
           
+          intercept = f_s$intercept,
+          
           Num_Selected = length(f_s$Coef_Retained),
 
           vote=vote,criterion=tune,
+          
+          ID_Pool= IP,
+          
+          sub_model = sub_model,
 
           Criterion_value=criter_value,
 
           ID_Voted=ID_Voted,
+          
+          ctg = ctg,
 
           gamma_ebic=gamma_ebic,
+          
+          codingtype = codingtype,
 
           gamma_seq=gamma_seq, X = X , Y = Y)
   class(S)<-"selection"

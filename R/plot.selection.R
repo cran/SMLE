@@ -14,7 +14,6 @@
 #' Data<-Gen_Data(correlation="MA",family = "gaussian")
 #' fit<-SMLE(Data$Y,Data$X,k=20,family = "gaussian")
 #' E<-smle_select(fit)
-#' #Then E is a object of "selection"
 #' plot(E)
 #'
 #' @export
@@ -23,17 +22,17 @@
 plot.selection<-function(x,...){
   ## new plot
   plot.new()
-  plot(x$Criterion_value,xlab="Model sparsity", ylab= paste(x$criterion,"value"),...)
+  plot(x$criterion_value,xlab="Model sparsity", ylab= paste(x$criterion,"value"),...)
   if(x$vote ==TRUE){
 
     dev.new()
     percent <- function(x, digits = 2, format = "f", ...) {
     paste0(formatC(100 * x, format = format, digits = digits), "%")
     }
-    y<-data.frame("Proportion"= sort(summary(x$ID_Pool),decreasing = T)/length(x$gamma_seq))
-    ID_names<- x$sub_model[as.numeric(names(summary(x$ID_Pool)[order(summary(x$ID_Pool),decreasing= T)]))]
+    y<-data.frame("Proportion"= sort(summary(x$ID_pool),decreasing = T)/length(x$gamma_seq))
+    ID_names<- x$subset[as.numeric(names(summary(x$ID_pool)[order(summary(x$ID_pool),decreasing= T)]))]
     barplot(y$Proportion,names.arg =ID_names ,
-            xlab = "Candidate Features IDs",ylab="Featrues Voting Proportion",main="Voting results"
+            xlab = "Candidate Features IDs",ylab="Features Voting Proportion",main="Voting results"
             )
   }
 }

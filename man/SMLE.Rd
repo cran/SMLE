@@ -20,7 +20,7 @@ SMLE(object, ...)
   intercept = TRUE,
   group = TRUE,
   codingtype = NULL,
-  Coef_initial = NULL,
+  coef_initial = NULL,
   max_iter = 500,
   tol = 0.01,
   selection = F,
@@ -41,7 +41,7 @@ See \code{smle_select()} documentation for more details.}
 
 \item{X}{The \eqn{n \times p} feature matrix with each column denoting a feature
 (covariate) and each row denoting an observation vector. The input should be
-the object of "matrix" for numerical data, and "data.frame" for categorical
+a "matrix" object for numerical data, and "data.frame" for categorical
 data (or a mixture of numerical and categorical data). The algorithm will
 treat covariates having class "factor" as categorical data and extend the data
 frame dimension by the dummy columns needed for coding the categorical features.}
@@ -65,13 +65,13 @@ be used in the screening process. Default is NULL.}
 
 \item{keyset}{A vector to indicate a set of key features that do not
 participate in feature screening and are forced to remain in the model.
-Default is null.}
+Default is NULL}
 
-\item{intercept}{A vector to indicate whether to an intercept be used in
+\item{intercept}{A logical flag to indicate whether to an intercept be used in
 the model. An intercept will not participate in screening.}
 
 \item{group}{Logical flag for whether to treat the dummy covariates of a
-categorical feature as a group. (Only for categorical data, see details).
+categorical feature as a group. (Only for categorical data, see Details).
 Default is TRUE.}
 
 \item{codingtype}{Coding types for categorical features; default is \code{'DV'}.
@@ -81,7 +81,7 @@ comparison with the grand mean.
 \code{Codingtype = "standard"} conducts standard dummy coding for each level
 in comparison with the reference level (first level).}
 
-\item{Coef_initial}{A \eqn{p}-dimensional vector for the initial coefficient 
+\item{coef_initial}{A \eqn{p}-dimensional vector for the initial coefficient 
 value of the IHT algorithm.  The default is to use Lasso with the sparsity 
 closest to \eqn{n-1}.}
 
@@ -93,21 +93,21 @@ Default is \eqn{10^{-2}}.}
 
 \item{selection}{A logical flag to indicate whether an elaborate selection
 is to be conducted by \code{smle_select} after screening.
- Default is FALSE. If TRUE, the function will return a '\code{selection}' object, 
- see \code{smle_select()} documentation for more details.}
+ If TRUE, the function will return a '\code{selection}' object, 
+ see \code{smle_select()} documentation. Default is FALSE.}
 
 \item{standardize}{Logical flag for feature standardization, prior to
-performing (iterative) feature screening.  The resulting coefficients are
-always returned on the original scale. Default is \code{standardize=TRUE}.
+performing (iterative) feature screening. The resulting coefficients are
+always returned on the original scale. 
 If features are in the same units already, you might not wish to
-standardize.}
+standardize. Default is \code{standardize=TRUE}.}
 
 \item{fast}{Set to TRUE to enable early stop for SMLE-screening. It may help
 to boost the screening efficiency with a little sacrifice of accuracy.
-Default is FALSE, see details.}
+Default is FALSE, see Details.}
 
 \item{U_rate}{Decreasing rate in tuning step parameter \eqn{u^{-1}} in IHT
-algorithm. See details.}
+algorithm. See Details.}
 
 \item{penalize_mod}{A logical flag to indicate whether adjustment is used in
 ranking groups of features. This augment is applicable only when
@@ -115,14 +115,41 @@ ranking groups of features. This augment is applicable only when
 a factor of \eqn{\sqrt{J}} is divided from the \eqn{L_2} effect of a group with J members.}
 }
 \value{
-Returns a \code{'smle'} object with
-\item{I}{A list of iteration information.
+\item{call}{The call that produced this object.}
+
+\item{ID_retained}{A vector indicating the features retained after SMLE screening.
+The output includes both features retained by SMLE and the features specified in \code{'keyset'}.}
+
+\item{coef_retained}{The vector of coefficients for the retained features.}
+
+\item{path_retained}{Iteration path matrix with columns recording the coefficient updates over the IHT procedure.}
+
+\item{num_retained}{Number of retained features after screening.}
+
+\item{intercept}{The value, if Intercept = TRUE.}
+
+\item{steps}{Number of iterations.}
+
+\item{likelihood_iter}{A list of log-likelihood updates over the IHT iterations }
+
+\item{Usearch}{Vector giving the number of attempts to find a proper \eqn{u^{-1}} at each iteration step.}
+
+\item{family}{A character return of argument.}
+
+\item{X,Y}{Original data input.}
+
+\item{ctg}{Logical flag whether the input feature matrix includes
+categorical features}
+
+\item{FD}{A matrix contains feature indices retained at each interaction step.}
+
+\item{I}{A list containing data objects used by the function during iterations.
 
 \code{Y}: Same as input Y.
 
 \code{CM}: Design matrix of class \code{'matrix'} for numeric features (or \code{'data.frame'} with categorical features).
 
-\code{DM}: A matrix with dummy variable featrues added. (only if there are categorical features).
+\code{DM}: A matrix with dummy variable features added. (only if there are categorical features).
 
 \code{IM}: Iteration path matrix with columns recording IHT coefficient updates.
 
@@ -130,34 +157,19 @@ Returns a \code{'smle'} object with
 
 \code{CI}: Indices of categorical features in \code{CM}.
 
-\code{Beta0}: Inital value of regression coefficient for IHT.
+\code{beta0}: Inital value of regression coefficient for IHT.
 
 \code{DFI}: Indices of categorical features in \code{IM}.
 
 \code{codingtype}: Same as input.
+
+\code{feature_name}: A list contains the names of selected features.
  }
-
-\item{ID_Retained}{A vector indicating the features retained after SMLE screening.
-The output includes both features retained by SMLE and the features specified in \code{'keyset'}.}
-
-\item{Coef_Retained}{The vector of coefficients for the retained features.}
-
-\item{Path_Retained}{Iteration path matrix with columns recording the coefficient updates over the IHT procedure.}
-
-\item{Num_Retained}{Number of retained featrues after screening.}
-
-\item{Intercept}{The value, if Intercept = TRUE.}
-
-\item{steps}{Number of iterations.}
-
-\item{LH}{A list of log-likelihood updates over the IHT iterations }
-
-\item{Usearch}{Number of times in searching a proper \eqn{u^{-1}} at each step over the IHT iterations.}
 }
 \description{
 Input a \eqn{n \times 1} response Y and a \eqn{n \times p} feature matrix X;
 the function uses SMLE to retain only a set of \eqn{k<n} features that seem
-to be most relevant for a GLM. It thus serves as a pre-processing step for an
+to be most related to the response variable. It thus serves as a pre-processing step for an
 elaborative analysis. In SMLE, the joint effects between features are naturally
 accounted; this makes the screening more reliable. The function uses the
 efficient iterative hard thresholding (IHT) algorithm with step parameter
@@ -199,18 +211,18 @@ selection method on the output of \code{SMLE()}.
 \examples{
 
 #Example
-set.seed(123.456)
 Data<-Gen_Data(n=100, p=5000, family = "gaussian", correlation="ID")
 Data
 fit<-SMLE(Y=Data$Y, X=Data$X, k=9, family = "gaussian")
 fit
 summary(fit)
-## The important features we missed:
-setdiff(Data$subset_true,fit$ID_Retained)
-## Check if the important featrues are retained.
-Data$index \%in\% fit$ID_Retained
-plot(fit)
 
+# The important features we missed:
+setdiff(Data$subset_true,fit$ID_retained)
+
+# Check if the important features are retained.
+Data$index \%in\% fit$ID_retained
+plot(fit)
 
 }
 \references{
@@ -220,5 +232,5 @@ variables in regression analysis}. \url{https://stats.idre.ucla.edu/spss
 Retrieved May 28, 2020.
 
 Xu, C. and Chen, J. (2014). The Sparse MLE for Ultrahigh-Dimensional Feature
-Screening, \emph{Journal of the American Statistical Association}, \bold{109}(507), 1257–1269.
+Screening, \emph{Journal of the American Statistical Association}, \bold{109}(507), 12571269.
 }

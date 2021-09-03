@@ -4,8 +4,9 @@
 \alias{print.smle}
 \alias{print.selection}
 \alias{print.summary.smle}
+\alias{print.summary.selection}
 \alias{print.sdata}
-\title{Print a SMLE object}
+\title{Print an object}
 \usage{
 \method{print}{smle}(x, ...)
 
@@ -13,16 +14,25 @@
 
 \method{print}{summary.smle}(x, ...)
 
+\method{print}{summary.selection}(x, ...)
+
 \method{print}{sdata}(x, ...)
 }
 \arguments{
-\item{x}{Fitted '\code{smle}' object.}
+\item{x}{Fitted object.}
 
 \item{...}{This argument is not used and listed for method consistency.}
 }
 \value{
-No return value.
+Return argument invisibly.
 }
 \description{
-This functions prints the retained subset of a SMLE object.
+This functions prints information about the fitted model from a call to SMLE() or smle_select(),
+ or about the simulated data from a call to Gen_data(). The object passed as an argument to print is returned invisibly.
+}
+\examples{
+Data<-Gen_Data(correlation="MA",family = "gaussian")
+Data
+fit<-SMLE(Data$Y,Data$X,k=20,family = "gaussian")
+print(fit)
 }

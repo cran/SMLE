@@ -1,5 +1,5 @@
 #' @title
-#' Data simulator for high-dimensional
+#' Data simulator for high-dimensional GLMs
 #'
 #' @description
 #' This function generates synthetic datasets from GLMs with a user-specified correlation structure.
@@ -10,14 +10,14 @@
 #' @import matrixcalc
 #' @details
 #'
-#' Simulated data \eqn{(y_i , x_i)} for \eqn{i = 1, . . . , n} are generated as follows:
+#' Simulated data \eqn{(y_i , \bold{x_i})} for \eqn{i = 1, . . . , n} are generated as follows:
 #' First, we generate a \eqn{p \times 1} model coefficient vector beta with all entries being zero, except on the positions specified in \code{pos_truecoef},
 #' on which \code{effect_truecoef} is used. When \code{pos_truecoef} is not specified, we randomly choose \code{num_truecoef} positions from the coefficient
 #' vector. When \code{effect_truecoef} is not specified, we randomly set the strength of the true model coefficients as follow:
 #' \deqn{(0.5+U) \cdot Z}
-#' where U is a uniform distribution from 0 to 1,  and Z is a binomial distribution \eqn{P(Z=1)=1/2,P(Z=-1)=1/2}.
+#' where \eqn{U} is a uniform distribution from 0 to 1,  and \eqn{Z} is a binomial distribution \eqn{P(Z=1)=1/2,P(Z=-1)=1/2}.
 #'
-#' Next, we generate a \eqn{n \times p} feature matrix X based on the choice in
+#' Next, we generate a \eqn{n \times p} feature matrix \eqn{X} based on the choice in
 #' \code{correlation} specified as follows.
 #'
 #' Independent (ID):  all features are independently generated from \eqn{N( 0, 1)}.
@@ -33,11 +33,13 @@
 #'
 #' Auto-regressive (AR): candidate features \eqn{x_1,..., x_p} are joint normal, marginally \eqn{N( 0, 1)}, with
 #'
-#' cov\eqn{(x_j, x_h) = \rho^{|j-h|}} for all \eqn{j} and \eqn{h}.
+#' cov\eqn{(x_j, x_h) = \rho^{|j-h|}} for all \eqn{j} and \eqn{h}. The correlation strength \eqn{\rho} is controlled by argument rho.
 #'
-#' Then, generate the response variable Y according to its response type. For Gaussian model, \eqn{Y =x^T \cdot \beta + \epsilon} where \eqn{\epsilon\ \in} \eqn{N( 0, 1)}.
-#' For the binary model let \eqn{\pi = P(Y = 1|x)}. Sample y from Bernoulli(\eqn{\pi}) where \eqn{logit(\pi) = x^T \cdot\beta}.
-#' Finally, for the Poisson model, Y is generated from Poisson distribution with the link \eqn{\pi =exp(x^T \cdot \beta )}.
+#' Then, generate the response variable \eqn{Y} according to its response type. 
+#' For Gaussian model, \eqn{\bold{y} =X ^T \cdot \beta + \epsilon} where 
+#' \eqn{\epsilon\ \in} \eqn{N( 0, 1)}.
+#' For the binary model let \eqn{\pi = P(Y = 1|x)}. Sample \eqn{\bold{y}} from Bernoulli(\eqn{\pi}) where logit\eqn{(\pi) = X^T \cdot\beta}.
+#' Finally, for the Poisson model, \eqn{\bold{y}} is generated from Poisson distribution with the link \eqn{\pi} = exp\eqn{(X^T \cdot \beta )}.
 #' For more details see reference below.
 #'
 #' @param n Sample size, number of rows of for the feature matrix to be generated.
@@ -48,7 +50,7 @@
 #'
 #' @param num_truecoef The number of features (columns) that affect response. Default is 5.
 #'
-#' @param level_ctgidx  A vector to indicate the levels of categorical features in 'pos_ctgidx'. Default is 2.
+#' @param level_ctgidx  A vector to indicate the levels of categorical features in \code{'pos_ctgidx'}. Default is 2.
 #'
 #' @param effect_truecoef  Effects size corresponding to the features in \code{'pos_truecoef'}. If not specified, effect size is sampled based on a uniform distribution and direction is randomly sampled.  See Details.
 #'
@@ -73,7 +75,7 @@
 #'
 #' @references
 #' Xu, C. and Chen, J. (2014). The Sparse MLE for Ultrahigh-Dimensional Feature
-#' Screening, \emph{Journal of the American Statistical Association}, \bold{109}(507), 1257–1269
+#' Screening, \emph{Journal of the American Statistical Association}, \bold{109}(507), 1257-1269
 #'
 #'
 #'
@@ -90,15 +92,17 @@
 #' 
 #' \item{ctg}{Logical flag wether the model contains categorical features.}
 #' 
-#' \item{family,correlation}{Return of arguments.}
+#' \item{CI}{Indices of categorical features when \code{ctg = TRUE}.}
+#'
+#' \item{rho,family,correlation}{Return of arguments.}
 #' 
-#' \item{rho}{Value of correlation parameter, NULL if the features are independent.}
 #'
 #' @export
 #'
 #' @examples
 #' 
-#' #Simulating data with binomial response and independent strcture.
+#' #Simulating data with binomial response and auto-regressive structure.
+#' set.seed(1)
 #' Data<-Gen_Data(n =100, p = 1000,family ="binomial",correlation = "AR")
 #' cor(Data$X[,1:5])
 #' print(Data)
@@ -297,7 +301,7 @@ Gen_Data<-function(n=200,p=5000,sigma=1,
 
     D<-list(call = cl, Y = D$Y,X = Z , subset_true = pos_truecoef, coef_true= effect_truecoef,
 
-            family = family, ctg = TRUE, correlation = correlation)
+            family = family, ctg = TRUE, correlation = correlation,CI=pos_ctgidx)
 
     class(D) <- "sdata"
 
@@ -396,7 +400,7 @@ Gen_Data<-function(n=200,p=5000,sigma=1,
                        'CS'='compound symmetry')
 
     D<-list(call = cl, Y = Y,X = numeric_data , subset_true = sort(pos_truecoef), coef_true= effect_truecoef[order(pos_truecoef)],
-            family = family, ctg = FALSE, correlation = correlation,rho=rho)
+            family = family, ctg = FALSE, correlation = correlation,rho=rho,CI = NULL)
 
     class(D)<-"sdata"
 

@@ -42,19 +42,22 @@ set.seed(123.456)
 Data<-Gen_Data(correlation="MA",family = "gaussian")
 print(Data)
 
+
 # joint feature screening via SMLE
 fit<-SMLE(Data$Y,Data$X,k=10,family = "gaussian")
 print(fit)
+summary(fit)
 plot(fit)
 
 #Are there any features missed after screening?
 setdiff(Data$subset_true, fit$ID_retained)
 
 # Elaborative selection after screening
-E<-smle_select(fit,gamma_ebic = 0.5,vote = FALSE)
+fit_s<-smle_select(fit,gamma_ebic = 0.5,vote = FALSE)
 
-#Are there any features missed after selection? %>% 
-setdiff( Data$subset_true ,E$ID_selected)
-print(E)
-plot(E)
+#Are there any features missed after selection? 
+setdiff( Data$subset_true ,fit_s$ID_selected)
+print(fit_s)
+summary(fit_s)
+plot(fit_s)
 }

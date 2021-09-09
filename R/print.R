@@ -1,6 +1,6 @@
 #' Print an object
-#' @description This functions prints information about the fitted model from a call to SMLE() or smle_select(),
-#'  or about the simulated data from a call to Gen_data(). The object passed as an argument to print is returned invisibly. 
+#' @description This functions prints information about the fitted model from a call to \code{\link{SMLE}} or \code{\link{smle_select}},
+#'  or about the simulated data from a call to \code{Gen_data}. The object passed as an argument to print is returned invisibly. 
 #' @rdname print
 #' @importFrom utils capture.output
 #'
@@ -10,11 +10,13 @@
 #' 
 #' @return Return argument invisibly.
 #' 
-#' @examples 
+#' @examples
+#' set.seed(1)
 #' Data<-Gen_Data(correlation="MA",family = "gaussian")
 #' Data
 #' fit<-SMLE(Data$Y,Data$X,k=20,family = "gaussian")
-#' print(fit)
+#' fit
+#' summary(fit)
 #' @export
 #' @method print smle
 
@@ -168,7 +170,7 @@ print.sdata<-function(x,...){
   catln(" Correlation: " , x$correlation)
   if(x$correlation != "independent"){catln(" Rho: ", x$rho)}
   catln(" Index of Causal Features: " , paste(x$subset_true,collapse = ','))
-  if(x$ctg ==T){catln("Design matrix concludes categorical features" )}
+  if(x$ctg ==T){catln(" Design matrix concludes categorical features" )}
   catln(" Model Type: ", x$family)
 
   ## done

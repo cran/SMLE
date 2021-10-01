@@ -12,7 +12,7 @@ out most irrelevant features in preparation for a more elaborate analysis. This 
 \tabular{ll}{
 Package: \tab smle\cr
 Type: \tab Package\cr
-Version: \tab 2.0-0\cr
+Version: \tab 2.0-1\cr
 Date: \tab 2021-09-24\cr
 License: \tab GPL-3\cr
 }

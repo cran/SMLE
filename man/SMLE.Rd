@@ -6,10 +6,10 @@
 \alias{SMLE.formula}
 \title{Joint feature screening via sparse maximum likelihood estimation for GLMs}
 \usage{
-SMLE(object, ...)
+SMLE(formula, ...)
 
 \method{SMLE}{default}(
-  object = NULL,
+  formula = NULL,
   X = NULL,
   Y = NULL,
   data = NULL,
@@ -31,10 +31,10 @@ SMLE(object, ...)
   ...
 )
 
-\method{SMLE}{formula}(object, data, categorical = NULL, ...)
+\method{SMLE}{formula}(formula, data, categorical = NULL, ...)
 }
 \arguments{
-\item{object}{An object of class \code{'formula'} (or one that can be coerced to that class): a symbolic description of the model to be fitted.}
+\item{formula}{An object of class \code{'formula'} (or one that can be coerced to that class): a symbolic description of the model to be fitted.}
 
 \item{...}{Additional arguments to be passed to \code{\link{smle_select}()} if \code{selection=TRUE}. 
 See \code{\link{smle_select}()} documentation for more details.}
@@ -50,7 +50,7 @@ frame dimension by the dummy columns needed for coding the categorical features.
 \code{family = "gaussian"}, non-negative counts for \code{family = "poisson"},
 binary (0-1) for \code{family = "binomial"}. Input \eqn{\bold{y}} should be \code{'numeric'}.}
 
-\item{data}{An optional data frame, list or environment (or object coercible by \code{\link[base]{as.data.frame}()} to a \code{'data frame'}) containing the features in the model.}
+\item{data}{An optional data frame, list or environment (or object coercible by \code{\link[base]{as.data.frame}()} to a \code{'data.frame'}) containing the features in the model.}
 
 \item{k}{Total number of features (including \code{keyset}) to be retained 
 after screening. Default is the largest integer not 

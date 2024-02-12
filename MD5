@@ -1,4 +1,4 @@
-45f10ecfbe9c07791621d50771627c91 *DESCRIPTION
+518f59908b37073628b415efbe16d3c9 *DESCRIPTION
 6c1e02c255add20011cd60c6a3b251a1 *NAMESPACE
 8c8701d1154215e35565c94116b17466 *R/Gen_data.R
 d674ee3cf2c429dd0ffad54abf9907ff *R/ICselect.R
@@ -22,7 +22,7 @@ f3fe3bffeb8abb8f095b189a4dfa3a94 *data/pvals.rda
 b25d214c114f2c2bf8e4ad99ff753bed *inst/CITATION
 ebe26f9691bf6650bbac4f2547543cab *inst/answers.txt
 15e88de1a2970ff24acdafa3dc9d6276 *man/Gen_Data.Rd
-bf594efd3d05bba2257b910ae58395d1 *man/SMLE-package.Rd
+55628115bee8fbf13ce6eda4ac3500a9 *man/SMLE-package.Rd
 4d8081b5b7601565b7c1babb4d189f41 *man/SMLE.Rd
 bdd2ac56e1d9e7367274c85a3122c37f *man/coef.Rd
 efb9769c0225f43300a17ddfc7d29a8f *man/logLik.Rd

@@ -414,6 +414,8 @@ SMLE_fit<-function(Y,X, k, family, keyset=NULL,categorical= FALSE,CI=NULL,
         beta_path- beta_path*X_sd+X_mean
         
       }
+      
+      keyset <- keyset[-1] - 1
         
     }else{
       

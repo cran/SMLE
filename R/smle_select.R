@@ -112,6 +112,7 @@ smle_select.sdata<-function(object, k_min=1, k_max=NULL, subset=NULL,
                             criterion="ebic", codingtype = c("DV","standard","all"),
                             gamma_seq=c(seq(0,1,0.2)), vote_threshold=0.6,
                             parallel = FALSE, num_clusters=NULL,...){
+  
   cl<-match.call()
   
   codingtype <- match.arg( codingtype )
@@ -156,10 +157,8 @@ smle_select.sdata<-function(object, k_min=1, k_max=NULL, subset=NULL,
           
           Continue <- readline(prompt='Please input Y or N. \n ')
         }
-        
-        
+  
       }
-      
       
     }
     
@@ -174,11 +173,16 @@ smle_select.sdata<-function(object, k_min=1, k_max=NULL, subset=NULL,
   if(!is.null(keyset)){
     
     keyset <- which(subset %in% keyset)
+
+    if(k_min < length(keyset)+1){ 
+    
+    message('The minimum number of 
+            features in the model is set to match the length of the keyset.')
+    }
     
     k_min <- max(k_min, length(keyset)+1)
     
     }
-  
   
   categorical <- any(sapply(X_s,is.factor))
   
@@ -209,15 +213,14 @@ smle_select.sdata<-function(object, k_min=1, k_max=NULL, subset=NULL,
   #----------------------------------------------------------------------------#
 
   # Run selection algorithm with information criterion specified (EBIC default)
-    
+
   criter_value<- ebicc(Y,X_s,family,criterion,codingtype,keyset,
                             k_min,k_max,n,pp,gamma_ebic,parallel,num_clusters)
     
-  v_s <- which.min(criter_value)+k_min-1
+  v_s <- which.min(criter_value) + k_min - 1
   
-  f_s<- SMLE(Y=Y, X=X_s, k=v_s, family=family,keyset=keyset)
-
-
+  f_s <- SMLE(Y=Y, X=X_s, k=v_s, family=family,keyset=keyset)
+  
     #------------------------------------------------------------------------#
     #------------------------------- Voting ---------------------------------#
     #------------------------------------------------------------------------#
@@ -230,10 +233,10 @@ smle_select.sdata<-function(object, k_min=1, k_max=NULL, subset=NULL,
     
     ebic_selection_by_gamma<-function(gamma){
       
-      ebic_value<-ebicc(Y,X_s,family,criterion,codingtype,keyset,
-                        k_min,k_max,n,pp,gamma,parallel,num_clusters)
+      ebic_value<-ebicc(Y, X_s, family, criterion, codingtype, keyset,
+                        k_min, k_max, n, pp, gamma, parallel, num_clusters)
       
-      v_s <- which.min(ebic_value)+k_min-1
+      v_s <- which.min(ebic_value) + k_min - 1
       
       ID <- SMLE(Y=Y, X=X_s, k=v_s, family=family,keyset=keyset)$ID_retained
       
@@ -259,23 +262,23 @@ smle_select.sdata<-function(object, k_min=1, k_max=NULL, subset=NULL,
 
         }
     
-    #----------------------------------------------------------------#
+    # ---------------------------------------------------------------- #
     
     IP<-as.factor(vs)
-    
-    # Count the frequency of features selected with different model of sparsity.
-    
-    IP_f<-summary(IP)[order(summary(IP),decreasing= T)]/max(summary(IP))
-    
-    # features with frequency higher than vote_threshold will be selected in ID_voted.
-    
-    ID_Voted<-as.numeric(names(IP_f[IP_f>=vote_threshold]))
-   
 
-    }
+    # Count the frequency of features selected with different model of sparsity.
+
+    IP_f <- summary(IP)[order(summary(IP),decreasing= T)]/max(summary(IP))
+
+    # features with frequency higher than vote_threshold will be selected in ID_voted.
+
+    ID_Voted <- as.numeric(names(IP_f[IP_f>=vote_threshold]))
+
+  }
+  
   if(is.null(subset)){
 
-    ID_Selected=f_s$ID_retained
+    ID_Selected = f_s$ID_retained
 
   }else{
 
@@ -286,7 +289,7 @@ smle_select.sdata<-function(object, k_min=1, k_max=NULL, subset=NULL,
   }
 
   Out<-list(
-    
+
           call = cl, ID_selected=ID_Selected, family = family,
 
           coef_selected=f_s$coef_retained,
@@ -318,7 +321,7 @@ smle_select.sdata<-function(object, k_min=1, k_max=NULL, subset=NULL,
   class(Out)<-"selection"
   
   return(Out)
-  }
+}
 
 #' @rdname smle_select
 #'
@@ -394,7 +397,7 @@ smle_select.smle<-function(object,...){
   # the retained features ID in smle object as the argument subset in smle_select,
   # and then call smle_select with the sdata function call.
   
-  cl<-match.call()
+  cl <- match.call()
   
   cl[[1]] <- as.name("smle_select")
   
@@ -445,6 +448,7 @@ smle_select.smle<-function(object,...){
   Out$call <- cl
   
   Out$keyset <- object$keyset
+  
   return(Out)
 }
 

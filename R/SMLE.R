@@ -239,7 +239,7 @@ SMLE <- function(formula=NULL, ...)
 
 #' @rdname SMLE
 #' @export
-SMLE.default<-function(formula=NULL, X=NULL,Y=NULL, data=NULL, k=NULL, 
+SMLE.default<-function(formula=NULL, X=NULL, Y=NULL, data=NULL, k=NULL, 
                        family=c("gaussian","binomial","poisson"),
                        keyset = NULL, intercept = TRUE, categorical = TRUE,
                        group = TRUE , codingtype = NULL , coef_initial=NULL,
@@ -365,7 +365,7 @@ SMLE.default<-function(formula=NULL, X=NULL,Y=NULL, data=NULL, k=NULL,
     
     if(length(CI) == 0){
       
-      CI<-NULL
+      CI <- NULL
       
       categorical = FALSE
       
@@ -490,7 +490,6 @@ SMLE.default<-function(formula=NULL, X=NULL,Y=NULL, data=NULL, k=NULL,
 #' @param data An optional data frame, list or environment (or object coercible by \code{\link[base]{as.data.frame}()} to a \code{'data.frame'}) containing the features in the model. It is required if \code{'formula'} is used.
 #' @export
 SMLE.formula<- function(formula, data, k=NULL,keyset = NULL, categorical = NULL,...) {
-  
   
   # Backup of the vector keyset as the type of the vector will be changed
   

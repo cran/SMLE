@@ -12,8 +12,8 @@ out most irrelevant features in preparation for a more elaborate analysis. This 
 \tabular{ll}{
 Package: \tab smle\cr
 Type: \tab Package\cr
-Version: \tab 2.1-1\cr
-Date: \tab 2024-02-12\cr
+Version: \tab 2.2-3\cr
+Date: \tab 2026-01-18\cr
 License: \tab GPL-3\cr
 }
 Input a \eqn{n \times 1} response vector Y and a \eqn{n \times p} predictor (feature) matrix X. The package outputs a set of \eqn{k < n} features that seem to be most relevant for joint regression. Moreover, the package provides a data simulator that generates synthetic datasets from high-dimensional GLMs, which accommodate both numerical and categorical features with commonly used correlation structures. \cr
@@ -26,7 +26,12 @@ Key functions:\cr
 \author{Qianxiang Zang, Chen Xu, Kelly Burkett\cr
 Maintainer: Qianxiang Zang  <qzang023@uottawa.ca>
 }
-\references{Xu, C. and Chen, J. (2014)
+\references{Zang, Q., Xu, C. and Burkett, K. (2025)
+  {SMLE}: An {R} Package for Joint Feature Screening in Ultrahigh-Dimensional {GLM}s
+  \emph{Journal of Statistical Software}, \bold{115}(8), 1--29.
+  \doi{10.18637/jss.v115.i08}.\cr
+
+  Xu, C. and Chen, J. (2014)
   The Sparse MLE for Ultrahigh-Dimensional Feature Screening
   \emph{Journal of the American Statistical Association}, \bold{109}(507), 1257–1269.\cr
 
